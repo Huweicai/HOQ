@@ -1,68 +1,75 @@
 package hoq
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/tls"
-	"crypto/x509"
-	"encoding/pem"
+	"bufio"
 	"github.com/lucas-clemente/quic-go"
 	_ "github.com/lucas-clemente/quic-go"
-	"io/ioutil"
 	"log"
-	"math/big"
 )
 
 type Server struct {
+	engine  engine
+	addr    string
+	handler Handler
 }
 
-func handleRequest(stream quic.Stream) {
-	got, err := ioutil.ReadAll(stream)
+func handleRequestDemo(stream quic.Stream) {
+	nr := bufio.NewReader(stream)
+	got, _, err := nr.ReadLine()
 	if err != nil {
 		log.Fatalln(err.Error())
 		return
 	}
-	stream.Write(testText)
-	log.Println("GOT" + string(got))
-	stream.Close()
+	log.Println("GOT: " + string(got))
+	_, err = stream.Write(testText)
+	if err != nil {
+		log.Fatalln(err.Error())
+		return
+	}
+	log.Println("SEND: " + string(testText))
+}
+
+/**
+check whether the config of server are all right for
+the following running
+*/
+func (s *Server) Ready() bool {
+	if s.engine == nil {
+		return false
+	}
+	return true
 }
 
 func (s *Server) Run(addr string) error {
-	listen, err := quic.ListenAddr(addr, generateTLSConfig(), nil)
+	if !s.Ready() {
+		return ServerNotReadyErr
+	}
+	s.addr = addr
+	listen, err := s.engine.Listen(addr)
 	if err != nil {
 		return err
 	}
 	log.Println("HTTP server started ,listen at " + addr)
 	for {
-		sess, err := listen.Accept()
+		channel, err := listen.Accept()
 		if err != nil {
 			return err
 		}
-		stream, err := sess.AcceptStream()
-		if err != nil {
-			return err
-		}
-		go handleRequest(stream)
+		go work(channel)
 	}
 }
 
-//todo learn more about it's encryption
-func generateTLSConfig() *tls.Config {
-	key, err := rsa.GenerateKey(rand.Reader, 1024)
-	if err != nil {
-		panic(err)
-	}
-	template := x509.Certificate{SerialNumber: big.NewInt(1)}
-	certDER, err := x509.CreateCertificate(rand.Reader, &template, &template, &key.PublicKey, key)
-	if err != nil {
-		panic(err)
-	}
-	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)})
-	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})
-
-	tlsCert, err := tls.X509KeyPair(certPEM, keyPEM)
-	if err != nil {
-		panic(err)
-	}
-	return &tls.Config{Certificates: []tls.Certificate{tlsCert}}
+/**
+start handle the request
+*/
+func work(channel Channel) {
+	log.Println("start work with request from :" + channel.RemoteAddr().String())
+	/*
+		todo implements it
+		先不用考虑连接复用的事情
+		解析第一行；解析头部；封装成request，调用对应的handle方法
+		返回response；flush；close
+		finish
+	*/
+	return
 }
