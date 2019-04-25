@@ -30,6 +30,23 @@ func handleRequestDemo(stream quic.Stream) {
 }
 
 /**
+new a HTTP server with required arguments
+*/
+func NewServer(engine int, handler Handler) (s *Server, err error) {
+	ng, err := newEngine(engine, handler)
+	if err != nil {
+		return
+	}
+	if handler == nil {
+		return nil, ServerNotReadyErr
+	}
+	return &Server{
+		engine:  ng,
+		handler: handler,
+	}, nil
+}
+
+/**
 check whether the config of server are all right for
 the following running
 */
@@ -45,18 +62,8 @@ func (s *Server) Run(addr string) error {
 		return ServerNotReadyErr
 	}
 	s.addr = addr
-	listen, err := s.engine.Listen(addr)
-	if err != nil {
-		return err
-	}
-	log.Println("HTTP server started ,listen at " + addr)
-	for {
-		channel, err := listen.Accept()
-		if err != nil {
-			return err
-		}
-		go work(channel)
-	}
+	s.engine.Serve(addr)
+	return nil
 }
 
 /**

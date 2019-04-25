@@ -1,3 +1,3 @@
 package hoq
 
-type Headers map[string]string
+type Headers map[string][]string

@@ -20,7 +20,7 @@ func (*Client) Post(url string, body []byte) *Response {
 func (c *Client) Ping() bool {
 	sess, err := quic.DialAddr(testHost, &tls.Config{InsecureSkipVerify: true}, nil)
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Println(err.Error())
 		return false
 	}
 	stream, err := sess.OpenStreamSync()
