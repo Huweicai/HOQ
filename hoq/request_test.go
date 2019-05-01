@@ -7,6 +7,8 @@ import (
 )
 
 func Test_parseFirstLine(t *testing.T) {
+	a := []byte("\n")
+	logrus.Error(a)
 	type args struct {
 		line string
 	}

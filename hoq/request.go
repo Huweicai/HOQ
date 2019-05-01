@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/textproto"
@@ -38,7 +39,7 @@ func parseFirstRequestLine(line string) (method, url, proto string, ok bool) {
 /**
 convert a io.Reader to a HTTP request
 */
-func newRequest(stream io.Reader) (r *Request, err error) {
+func readRequest(stream io.Reader) (r *Request, err error) {
 	bufR := bufio.NewReader(stream)
 	textR := textproto.NewReader(bufR)
 	fl, err := textR.ReadLine()
@@ -85,13 +86,23 @@ func (r *Request) Response(code int, headers Headers, body []byte) *Response {
 	}
 }
 
-func (r *Request) Serialize() (string, error) {
-	return `GET www.baidu.com HTTP/1.1
-Host: b.cn
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:66.0) Gecko/20100101 Firefox/66.0
-Accept: */*
-Accept-Language: zh-CN,en-US;q=0.7,en;q=0.3
-Accept-Encoding: gzip, deflate
-Referer: http://b.cn/
-DNT: 1`, nil
+/*
+序列化
+*/
+func (r *Request) Serialize() (b []byte, err error) {
+	headerLine := fmt.Sprintf("%s %s %s", r.method, r.url.String(), r.proto)
+	b = []byte(headerLine + "\n")
+	if r.headers != nil {
+		headers := r.headers.Serialize()
+		b = append(b, []byte(headers+"\n")...)
+	}
+	if r.Body != nil {
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			return nil, err
+		}
+		b = append(b, headerBodySep)
+		b = append(b, body...)
+	}
+	return
 }

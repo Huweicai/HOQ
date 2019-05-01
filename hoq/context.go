@@ -3,9 +3,9 @@ package hoq
 import "time"
 
 type Context struct {
-	RemoteAddr string
-	Request    *Request
-	Response   *Response
+	Remote   *remoteInfo
+	Request  *Request
+	Response *Response
 }
 
 func (Context) Deadline() (deadline time.Time, ok bool) {

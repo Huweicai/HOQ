@@ -85,7 +85,7 @@ func (t *quicEngine) HandleSess(sess quic.Session) {
 
 func (t *quicEngine) HandleStream(sess quic.Session, stream quic.Stream) {
 	defer stream.Close()
-	req, err := newRequest(stream)
+	req, err := readRequest(stream)
 	resp := t.handler(&Context{
 		Request:    req,
 		RemoteAddr: sess.RemoteAddr().String(),
@@ -95,7 +95,7 @@ func (t *quicEngine) HandleStream(sess quic.Session, stream quic.Stream) {
 		logrus.Error(err.Error())
 		return
 	}
-	_, err = bufio.NewWriter(stream).Write([]byte(rspText))
+	_, err = bufio.NewWriter(stream).Write(rspText)
 	if err != nil {
 		logrus.Warn(err.Error())
 		return

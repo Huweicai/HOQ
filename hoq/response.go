@@ -3,7 +3,9 @@ package hoq
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"net/textproto"
 	"strconv"
 	"strings"
@@ -53,15 +55,25 @@ func newResponse(reader io.Reader) (r *Response, err error) {
 	}, nil
 }
 
-func (r *Response) Serialize() (b string, err error) {
-	//todo implements it
-	return `HTTP/1.1 200 OK
-Server: nginx
-Date: Thu, 25 Apr 2019 11:46:43 GMT
-Content-Type: text/plain;charset=UTF-8
-Cache-Control: no-store
-
-this is body`, nil
+/**
+序列化成文本便于传输
+todo body是否需要单独抽出来？
+或许序列化先只需要序列化报文头部分
+*/
+func (r *Response) Serialize() (b []byte, err error) {
+	headerLine := fmt.Sprintf("%s %d %s", r.proto, r.statusCode, r.statusMSg)
+	headers := r.headers.Serialize()
+	//todo check "\n" or "\r\n"
+	b = []byte(headerLine + "\n" + headers)
+	if r.Body != nil {
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			return b, err
+		}
+		b = append(b, headerBodySep)
+		b = append(b, body...)
+	}
+	return b, nil
 }
 
 //parse the first line of response header

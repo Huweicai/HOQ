@@ -5,22 +5,25 @@ import (
 	"github.com/lucas-clemente/quic-go"
 )
 
+/**
+快递员：负责将上层传入的请求发出并捕获对应的服务端响应
+*/
 type Courier interface {
-	RoundTrip(*Request) (*Response, error)
+	RoundTrip(*Request) (*Response, *remoteInfo, error)
 }
 
 type TCPCourier struct {
 }
 
-func (t *TCPCourier) RoundTrip(*Request) (*Response, error) {
+func (t *TCPCourier) RoundTrip(*Request) (*Response, *remoteInfo, error) {
 	panic("implements me")
-	return nil, nil
+	return nil, nil, nil
 }
 
 type QUICCourier struct {
 }
 
-func (c *QUICCourier) RoundTrip(req *Request) (resp *Response, err error) {
+func (c *QUICCourier) RoundTrip(req *Request) (resp *Response, remote *remoteInfo, err error) {
 	txt, err := req.Serialize()
 	if err != nil {
 		return
@@ -33,11 +36,13 @@ func (c *QUICCourier) RoundTrip(req *Request) (resp *Response, err error) {
 	if err != nil {
 		return
 	}
-	_, err = stream.Write([]byte(txt))
+	_, err = stream.Write(txt)
 	if err != nil {
 		return
 	}
-	return newResponse(stream)
+	remote = &remoteInfo{addr: sess.RemoteAddr()}
+	resp, err = newResponse(stream)
+	return
 }
 
 func (c *QUICCourier) GetSession() {
