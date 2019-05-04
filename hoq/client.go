@@ -15,7 +15,7 @@ var defaultClient = Client{&QUICCourier{}}
 
 /**
 HTTP客户端，用于发起请求
-*/
+*/o
 type Client struct {
 	engine Courier
 }
@@ -23,7 +23,7 @@ type Client struct {
 /**
 new common request
 */
-func (c *Client) Request(targetUrl, method string, headers Headers, body io.Reader) (ctx *Context, err error) {
+func (c *Client) Request(targetUrl, method string, headers *Headers, body io.Reader) (ctx *Context, err error) {
 	if !isSupportedMethod(method) {
 		return nil, MethodNotSupportErr
 	}
@@ -81,4 +81,15 @@ func Get(url string) (ctx *Context, err error) {
 
 func Post(url string, body []byte) (ctx *Context, err error) {
 	return defaultClient.Request(url, MethodPOST, nil, bytes.NewReader(body))
+}
+
+func NewClient(engine int) (c *Client, err error) {
+	switch engine {
+	case TcpEngine:
+		return &Client{&TCPCourier{}}, nil
+	case QuicEngine:
+		return &Client{&QUICCourier{}}, nil
+	default:
+		return nil, UnsupportedEngine
+	}
 }

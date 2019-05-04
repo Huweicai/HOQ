@@ -27,7 +27,7 @@ type Response struct {
 	proto      string
 	statusCode int
 	statusMSg  string
-	headers    Headers
+	headers    *Headers
 	Body       io.Reader
 }
 
@@ -51,7 +51,7 @@ func newResponse(reader io.Reader) (r *Response, err error) {
 		statusCode: code,
 		statusMSg:  msg,
 		Body:       reader,
-		headers:    Headers(mimeHeader),
+		headers:    &Headers{mimeHeaderToMap(mimeHeader)},
 	}, nil
 }
 
@@ -59,21 +59,73 @@ func newResponse(reader io.Reader) (r *Response, err error) {
 序列化成文本便于传输
 todo body是否需要单独抽出来？
 或许序列化先只需要序列化报文头部分
+Deprecated
 */
 func (r *Response) Serialize() (b []byte, err error) {
-	headerLine := fmt.Sprintf("%s %d %s", r.proto, r.statusCode, r.statusMSg)
+	headerLine := r.statusLine()
 	headers := r.headers.Serialize()
-	//todo check "\n" or "\r\n"
-	b = []byte(headerLine + "\n" + headers)
+	b = []byte(headerLine + headerBodySepStr + headers + headerBodySepStr + headerBodySepStr)
 	if r.Body != nil {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			return b, err
 		}
-		b = append(b, headerBodySep)
 		b = append(b, body...)
 	}
 	return b, nil
+}
+
+/*
+check whether response is ready for transport
+*/
+func (r *Response) ready() bool {
+	if r.proto == "" {
+		return false
+	}
+	if 0 < r.statusCode || r.statusCode > 600 {
+		return false
+	}
+	if r.statusMSg == "" {
+		return false
+	}
+	return true
+}
+
+/**
+状态行
+*/
+func (r *Response) statusLine() string {
+	code := strconv.Itoa(r.statusCode)
+	if code == "0" {
+		code = ""
+	}
+	return fmt.Sprintf("%s %s %s", r.proto, code, r.statusMSg)
+}
+
+func (r *Response) Write(writer io.Writer) (err error) {
+	if !r.ready() {
+		return ResponseNotReadyErr
+	}
+	//1st
+	_, err = io.WriteString(writer, r.statusLine()+headerBodySepStr)
+	if err != nil {
+		return
+	}
+	//2nd
+	hds := r.headers.Serialize()
+	_, err = io.WriteString(writer, hds+headerBodySepStr)
+	if err != nil {
+		return
+	}
+	//3rd
+	if r.Body == nil {
+		return
+	}
+	_, err = io.Copy(writer, r.Body)
+	if err != nil {
+		return
+	}
+	return
 }
 
 //parse the first line of response header

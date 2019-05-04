@@ -1,21 +1,28 @@
 package hoq
 
 import (
-	"log"
+	"io"
 	"net/url"
 )
 
+var headerBodySepBytes = []byte("\r\n")
+
+const headerBodySepStr = "\r\n"
+
 const (
-	headerBodySep = byte(10)
-	defaultProto  = "HTTP/1.1"
+	defaultProto = "HTTP/1.1"
 
 	ProtoHTTP  = "http"
 	ProtoHTTPS = "https"
 )
 
-func init() {
-	log.SetFlags(log.Lshortfile | log.LstdFlags)
-}
+var NoBody = noBody{}
+
+type noBody struct{}
+
+func (noBody) Read([]byte) (int, error)         { return 0, io.EOF }
+func (noBody) Close() error                     { return nil }
+func (noBody) WriteTo(io.Writer) (int64, error) { return 0, nil }
 
 /**
 通用HTTP URL校验

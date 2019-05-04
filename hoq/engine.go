@@ -1,10 +1,10 @@
 package hoq
 
 import (
-	"bufio"
+	"HOQ/logs"
 	"errors"
 	"github.com/lucas-clemente/quic-go"
-	"github.com/sirupsen/logrus"
+	"github.com/sirupsen/logs"
 )
 
 const (
@@ -67,16 +67,22 @@ func (t *quicEngine) Serve(addr string) error {
 	for {
 		sess, err := listen.Accept()
 		if err != nil {
-			logrus.Error(err.Error())
+			logs.Error(err.Error())
 			continue
 		}
 		go t.HandleSess(sess)
 	}
 }
+
+/**
+一个Quic session 对应一条底层UDP连接，
+但是一个Session上理论可以被很多HTTP连接复用
+*/
 func (t *quicEngine) HandleSess(sess quic.Session) {
+	logs.Debug("HandleSess in")
 	stream, err := sess.AcceptStream()
 	if err != nil {
-		logrus.Error(err.Error())
+		logs.Error(err.Error())
 		return
 	}
 	defer sess.Close()
@@ -84,20 +90,18 @@ func (t *quicEngine) HandleSess(sess quic.Session) {
 }
 
 func (t *quicEngine) HandleStream(sess quic.Session, stream quic.Stream) {
+	logs.Debug("HandleStream in")
 	defer stream.Close()
 	req, err := readRequest(stream)
 	resp := t.handler(&Context{
-		Request:    req,
-		RemoteAddr: sess.RemoteAddr().String(),
+		Request: req,
+		Remote: &remoteInfo{
+			addr: sess.RemoteAddr(),
+		},
 	})
-	rspText, err := resp.Serialize()
+	err = resp.Write(stream)
 	if err != nil {
-		logrus.Error(err.Error())
-		return
-	}
-	_, err = bufio.NewWriter(stream).Write(rspText)
-	if err != nil {
-		logrus.Warn(err.Error())
+		logs.Warn(err.Error())
 		return
 	}
 	return

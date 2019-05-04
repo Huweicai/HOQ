@@ -24,9 +24,8 @@ type QUICCourier struct {
 }
 
 func (c *QUICCourier) RoundTrip(req *Request) (resp *Response, remote *remoteInfo, err error) {
-	txt, err := req.Serialize()
-	if err != nil {
-		return
+	if !req.ready() {
+		return nil, nil, RequestNotReadyErr
 	}
 	sess, err := quic.DialAddr(req.url.Host, &tls.Config{InsecureSkipVerify: true}, nil)
 	if err != nil {
@@ -36,7 +35,7 @@ func (c *QUICCourier) RoundTrip(req *Request) (resp *Response, remote *remoteInf
 	if err != nil {
 		return
 	}
-	_, err = stream.Write(txt)
+	err = req.Write(stream)
 	if err != nil {
 		return
 	}

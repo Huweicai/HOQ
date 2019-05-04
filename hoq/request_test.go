@@ -1,14 +1,17 @@
 package hoq
 
 import (
-	"github.com/sirupsen/logrus"
+	"io"
+	"net/url"
 	"strings"
 	"testing"
+
+	"github.com/sirupsen/logs"
 )
 
 func Test_parseFirstLine(t *testing.T) {
 	a := []byte("\n")
-	logrus.Error(a)
+	logs\.Error(a)
 	type args struct {
 		line string
 	}
@@ -85,11 +88,54 @@ func parseFirstLineBad(line string) (method, url, proto string, ok bool) {
 	return
 }
 
-func TestAtest(t *testing.T) {
-	logrus.SetFormatter(&logrus.TextFormatter{
-		ForceColors:     true,
-		TimestampFormat: "2006-01-02 15:04:05",
-		FullTimestamp:   true,
-	})
-	logrus.Info("hello wrold")
+func TestRequest_requestLine(t *testing.T) {
+	type fields struct {
+		method  string
+		url     *url.URL
+		proto   string
+		headers *Headers
+		Body    io.Reader
+	}
+	u1, _ := url.Parse("http://www.example.com")
+	u2, _ := url.Parse("/Home")
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			fields: fields{},
+			want:   "  ",
+		},
+		{
+			fields: fields{
+				proto:  "HTTP/1.1",
+				url:    u1,
+				method: "GET",
+			},
+			want: "GET http://www.example.com HTTP/1.1",
+		},
+		{
+			fields: fields{
+				proto:  "HTTP/2.0",
+				url:    u2,
+				method: "POST",
+			},
+			want: "POST /Home HTTP/2.0",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &Request{
+				method:  tt.fields.method,
+				url:     tt.fields.url,
+				proto:   tt.fields.proto,
+				headers: tt.fields.headers,
+				Body:    tt.fields.Body,
+			}
+			if got := r.requestLine(); got != tt.want {
+				t.Errorf("Request.requestLine() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
