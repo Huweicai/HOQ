@@ -15,7 +15,7 @@ var defaultClient = Client{&QUICCourier{}}
 
 /**
 HTTP客户端，用于发起请求
-*/o
+*/
 type Client struct {
 	engine Courier
 }

@@ -1,17 +1,16 @@
 package hoq
 
 import (
+	"HOQ/logs"
 	"io"
 	"net/url"
 	"strings"
 	"testing"
-
-	"github.com/sirupsen/logs"
 )
 
 func Test_parseFirstLine(t *testing.T) {
 	a := []byte("\n")
-	logs\.Error(a)
+	logs.Error(a)
 	type args struct {
 		line string
 	}

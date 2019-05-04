@@ -4,7 +4,6 @@ import (
 	"HOQ/logs"
 	"errors"
 	"github.com/lucas-clemente/quic-go"
-	"github.com/sirupsen/logs"
 )
 
 const (
