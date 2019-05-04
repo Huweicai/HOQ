@@ -131,17 +131,23 @@ func (g *HLogger) log(lvl LogLevel, s ...interface{}) {
 			apiName = methods[len(methods)-1]
 		}
 	}
+	lvlS := g.getAlignedLevel(lvl)
 	//unify all messages
 	msgs := fmt.Sprintln(s...)
 	msgs = strings.TrimSuffix(msgs, "\n")
 	//align levels
-	lvls := g.levelS[lvl]
-	if c := g.lvlMaxLength - len(lvls); c > 0 {
+
+	g.core.Printf("%s %s:%d %s", lvlS, fileName, lineNumber, msgs)
+}
+
+func (g *HLogger) getAlignedLevel(i LogLevel) string {
+	lvl := g.levelS[i]
+	if c := g.lvlMaxLength - len(lvl); c > 0 {
 		for i := 0; i < c; i++ {
-			lvls += " "
+			lvl += " "
 		}
 	}
-	g.core.Printf("%s %s:%d %s", lvls, fileName, lineNumber, msgs)
+	return lvl
 }
 
 func gray(s string) string {
