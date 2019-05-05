@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestLogger_log(t *testing.T) {
@@ -49,6 +50,7 @@ func TestSetLevel(t *testing.T) {
 		Info("TEST")
 		//there should only six lines
 	})
+	time.Sleep(1 * time.Millisecond)
 }
 
 func TestNewHLogger(t *testing.T) {

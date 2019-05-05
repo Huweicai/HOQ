@@ -15,6 +15,7 @@ import (
 /**
 Request 是单纯的应用层，HTTP维度的Request
 只承载HTTP维度的信息
+todo new request func
 */
 type Request struct {
 	method  string
@@ -22,6 +23,25 @@ type Request struct {
 	proto   string
 	headers *Headers
 	Body    io.Reader
+}
+
+func NewRequest(method, targetUrl string, headers *Headers, body io.Reader) (r *Request, err error) {
+	if !isSupportedMethod(method) {
+		return nil, MethodNotSupportErr
+	}
+	u, err := urlParse(targetUrl)
+	if err != nil {
+		return
+	}
+	headers.GenContentLength(body)
+	r = &Request{
+		method:  method,
+		Body:    body,
+		headers: headers,
+		proto:   defaultProto,
+		url:     u,
+	}
+	return
 }
 
 //parse the first line of header
@@ -55,37 +75,33 @@ func readRequest(stream io.Reader) (r *Request, err error) {
 		return nil, errors.New("malformed HTTP request")
 	}
 	//todo how to handler the situation without Header
-	mimeHeader, err := textR.ReadMIMEHeader()
+	header, err := ReadHeaders(textR)
 	if err != nil {
 		return
 	}
-	//todo judge body exists
-
+	length := header.ContentLength()
+	var body io.Reader = NoBody
+	if length != 0 {
+		body = io.LimitReader(stream, length)
+	}
 	return &Request{
 		method:  method,
-		headers: &Headers{headers: mimeHeaderToMap(mimeHeader)},
+		headers: header,
 		url:     u,
 		proto:   proto,
-		Body:    stream,
+		Body:    body,
 	}, nil
 }
 
 func (r *Request) GetBody() ([]byte, error) {
+	if existBody(r.Body) {
+		return nil, nil
+	}
 	return ioutil.ReadAll(r.Body)
 }
 
-func (r *Request) Response(code int, headers *Headers, body []byte) *Response {
-	if headers == nil {
-		headers = &Headers{}
-	}
-	msg := StatusMessage(code)
-	return &Response{
-		proto:      r.proto,
-		statusCode: code,
-		statusMSg:  msg,
-		headers:    headers,
-		Body:       bytes.NewReader(body),
-	}
+func (r *Request) Response(code int, headers *Headers, body []byte) (rsp *Response, err error) {
+	return NewResponse(code, headers, bytes.NewReader(body))
 }
 
 /*
@@ -174,11 +190,11 @@ func (r *Request) Write(writer io.Writer) (err error) {
 	}
 	//第二步：header
 	//header todo 分重要级，需要把Host ， Connection , UA , Content-Length 等控制字段放置于最前方
-	_, err = io.WriteString(writer, r.headers.Serialize()+headerBodySepStr)
+	_, err = io.WriteString(writer, r.headers.Serialize()+headerBodySepStr+headerBodySepStr)
 	if err != nil {
 		return
 	}
-	if r.Body == nil {
+	if !existBody(r.Body) {
 		return
 	}
 	//第三步：body（如果有的话）

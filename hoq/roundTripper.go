@@ -40,7 +40,7 @@ func (c *QUICCourier) RoundTrip(req *Request) (resp *Response, remote *remoteInf
 		return
 	}
 	remote = &remoteInfo{addr: sess.RemoteAddr()}
-	resp, err = newResponse(stream)
+	resp, err = readResponse(stream)
 	return
 }
 

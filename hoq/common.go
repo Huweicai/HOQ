@@ -1,8 +1,10 @@
 package hoq
 
 import (
+	"bytes"
 	"io"
 	"net/url"
+	"strings"
 )
 
 var headerBodySepBytes = []byte("\r\n")
@@ -25,6 +27,13 @@ func (noBody) Close() error                     { return nil }
 func (noBody) WriteTo(io.Writer) (int64, error) { return 0, nil }
 
 /**
+probe whether body is exist
+*/
+func existBody(r io.Reader) bool {
+	return r != nil && r != NoBody
+}
+
+/**
 通用HTTP URL校验
 */
 func urlParse(s string) (u *url.URL, err error) {
@@ -40,4 +49,36 @@ func urlParse(s string) (u *url.URL, err error) {
 		return nil, MalformedURLErr
 	}
 	return
+}
+
+/**
+probe length for reader
+*/
+func bodyLength(r io.Reader) (length int64, ok bool) {
+	switch i := r.(type) {
+	case nil, noBody:
+		return 0, true
+	case *bytes.Reader:
+		return int64(i.Len()), true
+	case *strings.Reader:
+		return int64(i.Len()), true
+	case *bytes.Buffer:
+		return int64(i.Len()), true
+	default:
+		return
+	}
+}
+
+// bodyAllowedForStatus reports whether a given response status code
+// permits a body. See RFC 7230, section 3.3.
+func bodyAllowedForStatus(status int) bool {
+	switch {
+	case status >= 100 && status <= 199:
+		return false
+	case status == 204:
+		return false
+	case status == 304:
+		return false
+	}
+	return true
 }

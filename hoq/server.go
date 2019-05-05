@@ -1,6 +1,7 @@
 package hoq
 
 import (
+	"HOQ/logs"
 	"bufio"
 	"github.com/lucas-clemente/quic-go"
 	_ "github.com/lucas-clemente/quic-go"
@@ -62,8 +63,8 @@ func (s *Server) Run(addr string) error {
 		return ServerNotReadyErr
 	}
 	s.addr = addr
-	s.engine.Serve(addr)
-	return nil
+	logs.Info("server starting at", addr)
+	return s.engine.Serve(addr)
 }
 
 /**

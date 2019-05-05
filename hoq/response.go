@@ -31,27 +31,52 @@ type Response struct {
 	Body       io.Reader
 }
 
-func newResponse(reader io.Reader) (r *Response, err error) {
+func NewResponse(code int, headers *Headers, body io.Reader) (rsp *Response, err error) {
+	if headers == nil {
+		headers = NewHeaders(nil)
+	}
+	msg := StatusMessage(code)
+	headers.GenContentLength(body)
+	return &Response{
+		proto:      defaultProto,
+		statusCode: code,
+		statusMSg:  msg,
+		headers:    headers,
+		Body:       body,
+	}, nil
+}
+
+/**
+core function!!!
+*/
+func readResponse(reader io.Reader) (r *Response, err error) {
 	bufR := bufio.NewReader(reader)
 	textR := textproto.NewReader(bufR)
 	line, err := textR.ReadLine()
 	if err != nil {
 		return
 	}
-	code, msg, proto, ok := parseFirstResponseLine(line)
+	//1st
+	code, msg, proto, ok := parseStatusLine(line)
 	if !ok {
 		return nil, errors.New("malformed HTTP response")
 	}
-	mimeHeader, err := textR.ReadMIMEHeader()
+	//2nd
+	headers, err := ReadHeaders(textR)
 	if err != nil {
 		return
+	}
+	//3rd
+	var body io.Reader = NoBody
+	if length := headers.ContentLength(); length > 0 {
+		body = io.LimitReader(bufR, length)
 	}
 	return &Response{
 		proto:      proto,
 		statusCode: code,
 		statusMSg:  msg,
-		Body:       reader,
-		headers:    &Headers{mimeHeaderToMap(mimeHeader)},
+		Body:       body,
+		headers:    headers,
 	}, nil
 }
 
@@ -82,7 +107,7 @@ func (r *Response) ready() bool {
 	if r.proto == "" {
 		return false
 	}
-	if 0 < r.statusCode || r.statusCode > 600 {
+	if 0 > r.statusCode || r.statusCode > 600 {
 		return false
 	}
 	if r.statusMSg == "" {
@@ -113,14 +138,15 @@ func (r *Response) Write(writer io.Writer) (err error) {
 	}
 	//2nd
 	hds := r.headers.Serialize()
-	_, err = io.WriteString(writer, hds+headerBodySepStr)
+	_, err = io.WriteString(writer, hds+headerBodySepStr+headerBodySepStr)
 	if err != nil {
 		return
 	}
 	//3rd
-	if r.Body == nil {
+	if !existBody(r.Body) {
 		return
 	}
+	//_, err = io.WriteString(writer, "HELLO WORLD")
 	_, err = io.Copy(writer, r.Body)
 	if err != nil {
 		return
@@ -130,15 +156,32 @@ func (r *Response) Write(writer io.Writer) (err error) {
 
 //parse the first line of response header
 //such as "HTTP/1.1 200 OK"
-func parseFirstResponseLine(line string) (code int, msg, proto string, ok bool) {
+func parseStatusLine(line string) (code int, msg, proto string, ok bool) {
 	i1 := strings.Index(line, " ")
+	if i1 < 0 {
+		ok = false
+		return
+	}
 	proto = line[:i1]
-	i2 := strings.Index(line[i1+1:], " ")
-	code, err := strconv.Atoi(line[i1+1 : i2])
+	tmp := strings.Index(line[i1+1:], " ")
+	if i1 < -1 {
+		ok = false
+		return
+	}
+	i2 := tmp + i1 + 1
+	codeS := line[i1+1 : i2]
+	code, err := strconv.Atoi(codeS)
 	if err != nil {
 		return
 	}
 	msg = line[i2+1:]
 	ok = true
 	return
+}
+
+func (r *Response) ReadBody() ([]byte, error) {
+	if !existBody(r.Body) {
+		return nil, nil
+	}
+	return ioutil.ReadAll(r.Body)
 }

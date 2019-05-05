@@ -23,20 +23,10 @@ type Client struct {
 /**
 new common request
 */
-func (c *Client) Request(targetUrl, method string, headers *Headers, body io.Reader) (ctx *Context, err error) {
-	if !isSupportedMethod(method) {
-		return nil, MethodNotSupportErr
-	}
-	u, err := urlParse(targetUrl)
+func (c *Client) Request(method, targetUrl string, headers *Headers, body io.Reader) (ctx *Context, err error) {
+	req, err := NewRequest(method, targetUrl, headers, body)
 	if err != nil {
 		return
-	}
-	req := &Request{
-		method:  method,
-		Body:    body,
-		headers: headers,
-		proto:   defaultProto,
-		url:     u,
 	}
 	resp, remoteInfo, err := c.engine.RoundTrip(req)
 	ctx = &Context{
@@ -48,11 +38,11 @@ func (c *Client) Request(targetUrl, method string, headers *Headers, body io.Rea
 }
 
 func (c *Client) Get(url string) (ctx *Context, err error) {
-	return c.Request(url, MethodGET, nil, nil)
+	return c.Request(MethodGET, url, nil, nil)
 }
 
 func (c *Client) Post(url string, body []byte) (ctx *Context, err error) {
-	return c.Request(url, MethodPOST, nil, bytes.NewReader(body))
+	return c.Request(MethodPOST, url, nil, bytes.NewReader(body))
 }
 
 func (c *Client) Ping() bool {

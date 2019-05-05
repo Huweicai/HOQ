@@ -6,6 +6,8 @@ import (
 )
 
 // HTTP status codes were stolen from valyala/fasthttp and he is stolen from net/http. hia hia hia
+//The status-code element is a 3-digit integer code describing the
+//result of the server's attempt to understand and satisfy the client's  corresponding request.
 const (
 	StatusContinue           = 100 // RFC 7231, 6.2.1
 	StatusSwitchingProtocols = 101 // RFC 7231, 6.2.2

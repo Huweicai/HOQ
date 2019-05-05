@@ -4,11 +4,13 @@ type Handler func(ctx *Context) *Response
 
 /**
 a simple echo handler for test
+todo Handler panic 处理，避免用户错误导致系统crash
 */
 func EchoHandler(ctx *Context) *Response {
 	body, _ := ctx.Request.GetBody()
 	if len(body) == 0 {
 		body = []byte("HELLO WORLD")
 	}
-	return ctx.Request.Response(StatusOK, nil, body)
+	rsp, _ := ctx.Request.Response(StatusOK, nil, body)
+	return rsp
 }

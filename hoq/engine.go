@@ -88,10 +88,17 @@ func (t *quicEngine) HandleSess(sess quic.Session) {
 	t.HandleStream(sess, stream)
 }
 
+/**
+todo 错误请求对应状态码返回
+*/
 func (t *quicEngine) HandleStream(sess quic.Session, stream quic.Stream) {
 	logs.Debug("HandleStream in")
 	defer stream.Close()
 	req, err := readRequest(stream)
+	if err != nil {
+		logs.Warn("read request failed", err)
+		return
+	}
 	resp := t.handler(&Context{
 		Request: req,
 		Remote: &remoteInfo{
