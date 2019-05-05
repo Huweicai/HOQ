@@ -85,12 +85,12 @@ func (h *Headers) GenContentLength(body io.Reader) bool {
 }
 
 func (h *Headers) Set(k, v string) {
-
+	h.headers[k] = v
 }
 
 func (h *Headers) Get(k string) string {
-	//todo implements it
-	return ""
+	got, _ := h.headers[k]
+	return got
 }
 
 func mimeHeaderToMap(mime textproto.MIMEHeader) map[string]string {
