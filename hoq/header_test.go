@@ -2,6 +2,7 @@ package hoq
 
 import (
 	"bytes"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
@@ -36,4 +37,9 @@ func TestHeaders_GetSet(t *testing.T) {
 	assert.Equal("", h.Get("aaa"))
 	h.Set("aaa", "bbb")
 	assert.Equal("bbb", h.Get("aaa"))
+}
+
+func TestHeaders_Serialize(t *testing.T) {
+	got := testHeader3.Serialize()
+	assert.Equal(t, "Host: example.com\r\nContent-Length: 9\r\nUser-Agent: Firefox 57", got)
 }

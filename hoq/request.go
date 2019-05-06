@@ -82,7 +82,7 @@ func readRequest(stream io.Reader) (r *Request, err error) {
 	length := header.ContentLength()
 	var body io.Reader = NoBody
 	if length != 0 {
-		body = io.LimitReader(stream, length)
+		body = io.LimitReader(bufR, length)
 	}
 	return &Request{
 		method:  method,
@@ -94,7 +94,7 @@ func readRequest(stream io.Reader) (r *Request, err error) {
 }
 
 func (r *Request) GetBody() ([]byte, error) {
-	if existBody(r.Body) {
+	if !existBody(r.Body) {
 		return nil, nil
 	}
 	return ioutil.ReadAll(r.Body)

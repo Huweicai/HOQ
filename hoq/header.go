@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/textproto"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -70,9 +71,9 @@ func (h *Headers) Serialize() string {
 		if value == "" {
 			continue
 		}
-		out += name + ": " + value
+		out += name + ": " + value + headerBodySepStr
 	}
-	return out
+	return strings.TrimSuffix(out, headerBodySepStr)
 }
 
 func (h *Headers) GenContentLength(body io.Reader) bool {
