@@ -1,13 +1,10 @@
 package hoq
 
 import (
-	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net/textproto"
 	"net/url"
 	"strings"
 )
@@ -25,6 +22,41 @@ type Request struct {
 	Body    io.Reader
 }
 
+func (r *Request) FirstLine() string {
+	return r.requestLine()
+}
+
+func (r *Request) EatFirstLine(s string) error {
+	method, rawUrl, proto, ok := parseFirstRequestLine(s)
+	if !ok {
+		return NewErrWithCode(StatusBadRequest, "malformated HTTP request")
+	}
+	u, err := url.Parse(rawUrl)
+	if err != nil {
+		return WrapErrWithCode(StatusBadRequest, err)
+	}
+	r.method = method
+	r.url = u
+	r.proto = proto
+	return nil
+}
+
+func (r *Request) GetBody() io.Reader {
+	return r.Body
+}
+
+func (r *Request) SetBody(body io.Reader) {
+	r.Body = body
+}
+
+func (r *Request) SetHeader(h *Headers) {
+	r.headers = h
+}
+
+func (r *Request) GetHeader() *Headers {
+	return r.headers
+}
+
 func NewRequest(method, targetUrl string, headers *Headers, body io.Reader) (r *Request, err error) {
 	if !isSupportedMethod(method) {
 		return nil, MethodNotSupportErr
@@ -32,6 +64,9 @@ func NewRequest(method, targetUrl string, headers *Headers, body io.Reader) (r *
 	u, err := urlParse(targetUrl)
 	if err != nil {
 		return
+	}
+	if headers == nil {
+		headers = NewHeaders(nil)
 	}
 	headers.GenContentLength(body)
 	r = &Request{
@@ -59,41 +94,16 @@ func parseFirstRequestLine(line string) (method, url, proto string, ok bool) {
 /**
 convert a io.Reader to a HTTP request
 */
-func readRequest(stream io.Reader) (r *Request, err error) {
-	bufR := bufio.NewReader(stream)
-	textR := textproto.NewReader(bufR)
-	fl, err := textR.ReadLine()
-	if err != nil {
-		return
-	}
-	method, rawUrl, proto, ok := parseFirstRequestLine(fl)
-	u, err := url.Parse(rawUrl)
-	if err != nil {
-		return
-	}
-	if !ok {
-		return nil, errors.New("malformed HTTP request")
-	}
-	//todo how to handler the situation without Header
-	header, err := ReadHeaders(textR)
-	if err != nil {
-		return
-	}
-	length := header.ContentLength()
-	var body io.Reader = NoBody
-	if length != 0 {
-		body = io.LimitReader(bufR, length)
-	}
-	return &Request{
-		method:  method,
-		headers: header,
-		url:     u,
-		proto:   proto,
-		Body:    body,
-	}, nil
+func readRequest(reader io.Reader) (r *Request, err error) {
+	r = &Request{}
+	err = read(reader, r)
+	return
 }
 
-func (r *Request) GetBody() ([]byte, error) {
+/**
+read body into bytes not just get the body in Reader format
+*/
+func (r *Request) ReadBody() ([]byte, error) {
 	if !existBody(r.Body) {
 		return nil, nil
 	}

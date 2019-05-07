@@ -2,7 +2,6 @@ package hoq
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -31,6 +30,45 @@ type Response struct {
 	Body       io.Reader
 }
 
+func (r *Response) FirstLine() string {
+	return r.statusLine()
+}
+
+func (r *Response) EatFirstLine(s string) error {
+	var ok bool
+	r.statusCode, r.statusMSg, r.proto, ok = parseStatusLine(s)
+	if !ok {
+		return NewErrWithCode(StatusBadRequest, "malformed HTTP response")
+	}
+	return nil
+}
+
+func (r *Response) GetBody() io.Reader {
+	return r.Body
+}
+
+func (r *Response) SetBody(body io.Reader) {
+	r.Body = body
+}
+
+func (r *Response) SetHeader(h *Headers) {
+	r.headers = h
+}
+
+func (r *Response) GetHeader() *Headers {
+	return r.headers
+}
+
+var innerServiceError *Response
+
+func init() {
+	rsp, err := NewResponse(StatusInternalServerError, nil, nil)
+	if err != nil {
+		panic("init failed")
+	}
+	innerServiceError = rsp
+}
+
 func NewResponse(code int, headers *Headers, body io.Reader) (rsp *Response, err error) {
 	if headers == nil {
 		headers = NewHeaders(nil)
@@ -50,6 +88,12 @@ func NewResponse(code int, headers *Headers, body io.Reader) (rsp *Response, err
 core function!!!
 */
 func readResponse(reader io.Reader) (r *Response, err error) {
+	r = &Response{}
+	err = read(reader, r)
+	return
+}
+
+func read(reader io.Reader, r Message) (err error) {
 	bufR := bufio.NewReader(reader)
 	textR := textproto.NewReader(bufR)
 	line, err := textR.ReadLine()
@@ -57,9 +101,9 @@ func readResponse(reader io.Reader) (r *Response, err error) {
 		return
 	}
 	//1st
-	code, msg, proto, ok := parseStatusLine(line)
-	if !ok {
-		return nil, errors.New("malformed HTTP response")
+	err = r.EatFirstLine(line)
+	if err != nil {
+		return
 	}
 	//2nd
 	headers, err := ReadHeaders(textR)
@@ -71,13 +115,10 @@ func readResponse(reader io.Reader) (r *Response, err error) {
 	if length := headers.ContentLength(); length > 0 {
 		body = io.LimitReader(bufR, length)
 	}
-	return &Response{
-		proto:      proto,
-		statusCode: code,
-		statusMSg:  msg,
-		Body:       body,
-		headers:    headers,
-	}, nil
+	//return
+	r.SetHeader(headers)
+	r.SetBody(body)
+	return
 }
 
 /**

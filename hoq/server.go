@@ -63,7 +63,7 @@ func (s *Server) Run(addr string) error {
 		return ServerNotReadyErr
 	}
 	s.addr = addr
-	logs.Info("server starting at", addr)
+	logs.Info("server starting at", addr, "with engine", s.engine.Name())
 	return s.engine.Serve(addr)
 }
 

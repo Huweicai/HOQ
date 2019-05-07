@@ -3,6 +3,7 @@ package hoq
 import (
 	"crypto/tls"
 	"github.com/lucas-clemente/quic-go"
+	"net"
 )
 
 /**
@@ -15,9 +16,18 @@ type Courier interface {
 type TCPCourier struct {
 }
 
-func (t *TCPCourier) RoundTrip(*Request) (*Response, *remoteInfo, error) {
-	panic("implements me")
-	return nil, nil, nil
+func (t *TCPCourier) RoundTrip(req *Request) (resp *Response, remote *remoteInfo, err error) {
+	conn, err := net.Dial("tcp", req.url.Host)
+	if err != nil {
+		return
+	}
+	err = req.Write(conn)
+	if err != nil {
+		return
+	}
+	remote = &remoteInfo{addr: conn.RemoteAddr()}
+	resp, err = readResponse(conn)
+	return
 }
 
 type QUICCourier struct {

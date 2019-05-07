@@ -75,9 +75,9 @@ func Post(url string, body []byte) (ctx *Context, err error) {
 
 func NewClient(engine int) (c *Client, err error) {
 	switch engine {
-	case TcpEngine:
+	case EngineTcp:
 		return &Client{&TCPCourier{}}, nil
-	case QuicEngine:
+	case EngineQuic:
 		return &Client{&QUICCourier{}}, nil
 	default:
 		return nil, UnsupportedEngine

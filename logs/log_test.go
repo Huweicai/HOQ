@@ -39,13 +39,13 @@ func TestSetLevel(t *testing.T) {
 	assert.NotPanics(t, func() {
 		testLogger.Debug("TEST")
 		testLogger.Info("TEST")
-		testLogger.SetLevel(InfoLevel)
+		testLogger.SetLevel(LevelInfo)
 		testLogger.Debug("TEST")
 		testLogger.Info("TEST")
 
 		Debug("TEST")
 		Info("TEST")
-		SetLevel(InfoLevel)
+		SetLevel(LevelInfo)
 		Debug("TEST")
 		Info("TEST")
 		//there should only six lines
@@ -61,7 +61,7 @@ func TestNewHLogger(t *testing.T) {
 }
 
 func TestGetAlignedLevel(t *testing.T) {
-	length := len(testLogger.getAlignedLevel(DebugLevel))
+	length := len(testLogger.getAlignedLevel(LevelDebug))
 	for i, _ := range testLogger.levelS {
 		if len(testLogger.getAlignedLevel(LogLevel(i))) != length {
 			t.Error("not all levels long the same")

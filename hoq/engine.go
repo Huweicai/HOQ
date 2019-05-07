@@ -4,11 +4,12 @@ import (
 	"HOQ/logs"
 	"errors"
 	"github.com/lucas-clemente/quic-go"
+	"net"
 )
 
 const (
-	TcpEngine = iota
-	QuicEngine
+	EngineTcp = iota
+	EngineQuic
 )
 
 var UnsupportedEngine = errors.New("unsupported enginee")
@@ -18,9 +19,9 @@ new a transporter according to it's name
 */
 func newEngine(engine int, handler Handler) (engine, error) {
 	switch engine {
-	case TcpEngine:
+	case EngineTcp:
 		return newTcpEngine(handler), nil
-	case QuicEngine:
+	case EngineQuic:
 		return newQuicEngine(handler), nil
 	default:
 		return nil, UnsupportedEngine
@@ -32,6 +33,7 @@ func newEngine(engine int, handler Handler) (engine, error) {
 */
 type engine interface {
 	Serve(addr string) error
+	Name() string
 }
 
 type tcpEngine struct {
@@ -55,7 +57,48 @@ func newQuicEngine(handler Handler) *quicEngine {
 }
 
 func (t *tcpEngine) Serve(addr string) error {
-	panic("implement me")
+	ln, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
+	}
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			logs.Error(err)
+			continue
+		}
+		go t.HandleConnection(conn)
+	}
+}
+
+func (t *tcpEngine) HandleConnection(con net.Conn) {
+	logs.Debug("HandlerConnection in...")
+	defer con.Close()
+	req, err := readRequest(con)
+	var resp *Response
+	//error handler
+	switch e := err.(type) {
+	case nil:
+		resp = t.handler(&Context{
+			Request: req,
+			Remote: &remoteInfo{
+				addr: con.RemoteAddr(),
+			},
+		})
+	case *ErrWithCode:
+		resp, err = NewResponse(e.Code(), nil, nil)
+		if err != nil {
+			resp = innerServiceError
+		}
+	default:
+		resp = innerServiceError
+	}
+	err = resp.Write(con)
+	if err != nil {
+		logs.Warn(err.Error())
+		return
+	}
+	return
 }
 
 func (t *quicEngine) Serve(addr string) error {
@@ -95,20 +138,36 @@ func (t *quicEngine) HandleStream(sess quic.Session, stream quic.Stream) {
 	logs.Debug("HandleStream in")
 	defer stream.Close()
 	req, err := readRequest(stream)
-	if err != nil {
-		logs.Warn("read request failed", err)
-		return
+	var resp *Response
+	//error handler
+	switch e := err.(type) {
+	case nil:
+		resp = t.handler(&Context{
+			Request: req,
+			Remote: &remoteInfo{
+				addr: sess.RemoteAddr(),
+			},
+		})
+	case *ErrWithCode:
+		resp, err = NewResponse(e.Code(), nil, nil)
+		if err != nil {
+			resp = innerServiceError
+		}
+	default:
+		resp = innerServiceError
 	}
-	resp := t.handler(&Context{
-		Request: req,
-		Remote: &remoteInfo{
-			addr: sess.RemoteAddr(),
-		},
-	})
 	err = resp.Write(stream)
 	if err != nil {
 		logs.Warn(err.Error())
 		return
 	}
 	return
+}
+
+func (t *quicEngine) Name() string {
+	return "QUIC"
+}
+
+func (t *tcpEngine) Name() string {
+	return "TCP"
 }

@@ -20,10 +20,11 @@ const (
 type LogLevel int
 
 const (
-	DebugLevel LogLevel = iota
-	InfoLevel
-	WarnLevel
-	ErrorLevel
+	LevelDebug LogLevel = iota
+	LevelInfo
+	LevelWarn
+	LevelError
+	LevelFatal
 )
 
 var defaultLogger = NewHLogger()
@@ -45,11 +46,12 @@ func NewHLogger() *HLogger {
 	g := &HLogger{
 		core: l,
 	}
-	levelS := make([]string, 4)
-	levelS[DebugLevel] = gray("DEBUG")
-	levelS[InfoLevel] = blue("INFO")
-	levelS[WarnLevel] = yellow("WARN")
-	levelS[ErrorLevel] = red("ERROR")
+	levelS := make([]string, 5)
+	levelS[LevelDebug] = gray("DEBUG")
+	levelS[LevelInfo] = blue("INFO")
+	levelS[LevelWarn] = yellow("WARN")
+	levelS[LevelError] = red("ERROR")
+	levelS[LevelFatal] = magenta("FATAL")
 	maxLen := len(levelS[0])
 	for _, lvl := range levelS {
 		if len(lvl) > maxLen {
@@ -58,7 +60,7 @@ func NewHLogger() *HLogger {
 	}
 	g.lvlMaxLength = maxLen
 	g.levelS = levelS
-	g.targetLevel = DebugLevel
+	g.targetLevel = LevelDebug
 	return g
 }
 
@@ -67,19 +69,25 @@ func (g *HLogger) SetLevel(i LogLevel) {
 }
 
 func (g *HLogger) Debug(s ...interface{}) {
-	g.log(DebugLevel, s...)
+	g.log(LevelDebug, s...)
 }
 
 func (g *HLogger) Info(s ...interface{}) {
-	g.log(InfoLevel, s...)
+	g.log(LevelInfo, s...)
 }
 
 func (g *HLogger) Warn(s ...interface{}) {
-	g.log(WarnLevel, s...)
+	g.log(LevelWarn, s...)
 }
 
 func (g *HLogger) Error(s ...interface{}) {
-	g.log(ErrorLevel, s...)
+	g.log(LevelError, s...)
+}
+
+func (g *HLogger) Fatal(s ...interface{}) {
+	g.log(LevelFatal, s...)
+	msgs := fmt.Sprintln(s...)
+	panic(strings.TrimSuffix(msgs, "\n"))
 }
 
 /**
@@ -90,19 +98,25 @@ func SetLevel(i LogLevel) {
 }
 
 func Debug(s ...interface{}) {
-	defaultLogger.log(DebugLevel, s...)
+	defaultLogger.Debug(s...)
 }
 
 func Info(s ...interface{}) {
-	defaultLogger.log(InfoLevel, s...)
+	defaultLogger.Info(s...)
 }
 
 func Warn(s ...interface{}) {
-	defaultLogger.log(WarnLevel, s...)
+	defaultLogger.Warn(s...)
 }
 
 func Error(s ...interface{}) {
-	defaultLogger.log(ErrorLevel, s...)
+	defaultLogger.Error(s...)
+}
+
+func Fatal(s ...interface{}) {
+	defaultLogger.Fatal(s...)
+	msgs := fmt.Sprintln(s...)
+	panic(strings.TrimSuffix(msgs, "\n"))
 }
 
 /**
@@ -114,7 +128,11 @@ func (g *HLogger) log(lvl LogLevel, s ...interface{}) {
 		return
 	}
 	fileName, lineNumber := "", 0
-	pc, _, _, ok := runtime.Caller(2)
+	skip := 2
+	if g == defaultLogger {
+		skip = 3
+	}
+	pc, _, _, ok := runtime.Caller(skip)
 	if ok {
 		fileName, lineNumber = runtime.FuncForPC(pc).FileLine(pc)
 		for i := len(fileName) - 1; i > 0; i-- {
