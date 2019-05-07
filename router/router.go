@@ -1,6 +1,6 @@
 package router
 
-import "math"
+import "HOQ/util"
 
 type RadixTree struct {
 }
@@ -9,6 +9,15 @@ type node struct {
 	father   *node
 	children []*node
 	val      string
+}
+
+func (n *node) hasSameSuffixWithChild(c *node) *node {
+	for i, s := range n.children {
+		if o := ut.CommonPrefix(c.val, s.val); o >= 0 {
+			return n.children[i]
+		}
+	}
+	return nil
 }
 
 /**
@@ -34,5 +43,46 @@ io llo  o
 root.val = "" 所以万物都是root的子节点
 */
 func (n *node) addChild(child *node) {
+	if child == nil {
+		return
+	}
+	i := ut.CommonPrefix(n.val, child.val)
+	//a 没有无关
+	if i == 0 {
+		return
+	}
+	//b
+	//b.2 n 完全包含于child
+	if i == len(n.val) {
+		//b.2.1 找到了
+		if e := n.hasSameSuffixWithChild(child); e != nil {
+			e.addChild(child)
+			return
+		}
+		//b.2.2 找不到
+		n.children = append(n.children, child)
+		return
+	}
+	//b.1
+	//分裂后的前缀
+	pre := n.val[:i+1]
+	//分裂后原来的节点
+	suf := n.val[i:]
+	newN := n.copy()
+	newN.val = suf
+	newN.father = n
+	n.val = pre
+	n.children = []*node{newN, child}
+	return
+}
 
+/**
+浅拷贝，父子指针值不变
+*/
+func (n *node) copy() *node {
+	return &node{
+		father:   n.father,
+		val:      n.val,
+		children: n.children,
+	}
 }
