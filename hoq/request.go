@@ -26,6 +26,14 @@ func (r *Request) FirstLine() string {
 	return r.requestLine()
 }
 
+func (r *Request) URL() *url.URL {
+	return r.url
+}
+
+func (r *Request) Method() string {
+	return r.method
+}
+
 func (r *Request) EatFirstLine(s string) error {
 	method, rawUrl, proto, ok := parseFirstRequestLine(s)
 	if !ok {
@@ -58,7 +66,7 @@ func (r *Request) GetHeader() *Headers {
 }
 
 func NewRequest(method, targetUrl string, headers *Headers, body io.Reader) (r *Request, err error) {
-	if !isSupportedMethod(method) {
+	if !IsSupportedMethod(method) {
 		return nil, MethodNotSupportErr
 	}
 	u, err := urlParse(targetUrl)

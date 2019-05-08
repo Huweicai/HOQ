@@ -17,7 +17,7 @@ var methods = []string{MethodGET, MethodHead, MethodPOST, MethodPUT, MethodDELET
 /**
 是否在支持的八种方法中
 */
-func isSupportedMethod(method string) bool {
+func IsSupportedMethod(method string) bool {
 	for _, me := range methods {
 		if me == method {
 			return true

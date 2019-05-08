@@ -18,6 +18,7 @@ func BenchmarkSpeed(b *testing.B) {
 	qc, _ := hoq.NewClient(hoq.EngineQuic)
 	tc, _ := hoq.NewClient(hoq.EngineTcp)
 	logs.SetLevel(logs.LevelError)
+	//quic 目前可能慢在TLS握手上，尝试去掉或给TCP加上TCP再次验证
 	b.Run("QUIC", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			_, err := qc.Get("http://127.0.0.1:6665")

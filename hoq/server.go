@@ -33,7 +33,7 @@ func handleRequestDemo(stream quic.Stream) {
 /**
 new a HTTP server with required arguments
 */
-func NewServer(engine int, handler Handler) (s *Server, err error) {
+func NewServer(engine NGType, handler Handler) (s *Server, err error) {
 	ng, err := newEngine(engine, handler)
 	if err != nil {
 		return

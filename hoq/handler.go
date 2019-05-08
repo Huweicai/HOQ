@@ -14,3 +14,8 @@ func EchoHandler(ctx *Context) *Response {
 	rsp, _ := ctx.Request.Response(StatusOK, nil, body)
 	return rsp
 }
+
+func ByeHandler(ctx *Context) *Response {
+	rsp, _ := ctx.Request.Response(StatusOK, nil, []byte("Bye Bye~"))
+	return rsp
+}

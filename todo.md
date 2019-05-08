@@ -2,4 +2,5 @@
 - [ ] status code method 信息统计
 - [ ] 易用Router模块
 - [ ] 限流
-- [ ] router使用Radix tree 和 HashMap性能对比
+- [ ] router使用Radix tree 和 HashMap性能对比- [ ] router使用Radix tree 和 HashMap性能对比
+- [ ] router 支持通配符，和中间件切面

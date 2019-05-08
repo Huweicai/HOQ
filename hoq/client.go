@@ -73,7 +73,7 @@ func Post(url string, body []byte) (ctx *Context, err error) {
 	return defaultClient.Request(url, MethodPOST, nil, bytes.NewReader(body))
 }
 
-func NewClient(engine int) (c *Client, err error) {
+func NewClient(engine NGType) (c *Client, err error) {
 	switch engine {
 	case EngineTcp:
 		return &Client{&TCPCourier{}}, nil

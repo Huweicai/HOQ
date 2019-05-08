@@ -20,7 +20,7 @@ func Test_isSupportedMethod(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := isSupportedMethod(tt.args.method); got != tt.want {
+			if got := IsSupportedMethod(tt.args.method); got != tt.want {
 				t.Errorf("isSupportedMethod() = %v, want %v", got, tt.want)
 			}
 		})

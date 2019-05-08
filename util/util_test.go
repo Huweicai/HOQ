@@ -17,28 +17,28 @@ func TestCommon(t *testing.T) {
 				a: "abc",
 				b: "ab",
 			},
-			want: 1,
+			want: 2,
 		},
 		{
 			args: args{
 				a: "",
 				b: "",
 			},
-			want: -1,
+			want: 0,
 		},
 		{
 			args: args{
 				a: "12345",
 				b: "",
 			},
-			want: -1,
+			want: 0,
 		},
 		{
 			args: args{
 				a: "12345",
 				b: "12366",
 			},
-			want: 2,
+			want: 3,
 		},
 	}
 	for _, tt := range tests {

@@ -7,8 +7,10 @@ import (
 	"net"
 )
 
+type NGType int
+
 const (
-	EngineTcp = iota
+	EngineTcp NGType = iota
 	EngineQuic
 )
 
@@ -17,7 +19,7 @@ var UnsupportedEngine = errors.New("unsupported enginee")
 /*
 new a transporter according to it's name
 */
-func newEngine(engine int, handler Handler) (engine, error) {
+func newEngine(engine NGType, handler Handler) (engine, error) {
 	switch engine {
 	case EngineTcp:
 		return newTcpEngine(handler), nil

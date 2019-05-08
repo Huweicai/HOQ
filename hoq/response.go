@@ -59,16 +59,31 @@ func (r *Response) GetHeader() *Headers {
 	return r.headers
 }
 
-var innerServiceError *Response
+/**
+常用Response
+*/
+var innerServiceError *Response = FastResponse(StatusInternalServerError, nil)
 
-func init() {
-	rsp, err := NewResponse(StatusInternalServerError, nil, nil)
-	if err != nil {
-		panic("init failed")
+/**
+不会返回Error的简单初始化Response api
+*/
+func FastResponse(code int, headers *Headers) *Response {
+	if headers == nil {
+		headers = NewHeaders(nil)
 	}
-	innerServiceError = rsp
+	msg := StatusMessage(code)
+	return &Response{
+		proto:      defaultProto,
+		statusCode: code,
+		statusMSg:  msg,
+		headers:    headers,
+		Body:       NoBody,
+	}
 }
 
+/**
+新建一个Response并初始化
+*/
 func NewResponse(code int, headers *Headers, body io.Reader) (rsp *Response, err error) {
 	if headers == nil {
 		headers = NewHeaders(nil)
