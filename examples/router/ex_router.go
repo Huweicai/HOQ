@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	r, err := router.New(hoq.EngineQuic, "127.0.0.1:8787", 0)
+	r, err := router.New(hoq.EngineTcp, "127.0.0.1:8787", 0)
 	if err != nil {
 		logs.Error(err)
 		return

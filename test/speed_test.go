@@ -7,8 +7,8 @@ import (
 )
 
 /**
-BenchmarkSpeed/QUIC-4         	    1000	   1924844 ns/op
-BenchmarkSpeed/TCP-4          	    3000	    363133 ns/op
+BenchmarkSpeed/QUIC-4         	     500	   2005767 ns/op
+BenchmarkSpeed/TCP-4          	     500	   2451111 ns/op
 */
 func BenchmarkSpeed(b *testing.B) {
 	qs, _ := hoq.NewServer(hoq.EngineQuic, hoq.EchoHandler)

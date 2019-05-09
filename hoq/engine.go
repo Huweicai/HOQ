@@ -2,6 +2,7 @@ package hoq
 
 import (
 	"HOQ/logs"
+	"crypto/tls"
 	"errors"
 	"github.com/lucas-clemente/quic-go"
 	"net"
@@ -59,7 +60,13 @@ func newQuicEngine(handler Handler) *quicEngine {
 }
 
 func (t *tcpEngine) Serve(addr string) error {
-	ln, err := net.Listen("tcp", addr)
+	cert, err := tls.LoadX509KeyPair("/Users/hwc/go/prjs/HOQ/cert/cert.pem", "/Users/hwc/go/prjs/HOQ/cert/key.pem")
+	if err != nil {
+		logs.Error(err)
+		return err
+	}
+	config := &tls.Config{Certificates: []tls.Certificate{cert}}
+	ln, err := tls.Listen("tcp", addr, config)
 	if err != nil {
 		return err
 	}

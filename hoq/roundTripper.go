@@ -3,7 +3,6 @@ package hoq
 import (
 	"crypto/tls"
 	"github.com/lucas-clemente/quic-go"
-	"net"
 )
 
 /**
@@ -17,7 +16,10 @@ type TCPCourier struct {
 }
 
 func (t *TCPCourier) RoundTrip(req *Request) (resp *Response, remote *remoteInfo, err error) {
-	conn, err := net.Dial("tcp", req.url.Host)
+	conf := &tls.Config{
+		InsecureSkipVerify: true,
+	}
+	conn, err := tls.Dial("tcp", req.url.Host, conf)
 	if err != nil {
 		return
 	}
