@@ -30,6 +30,10 @@ type Response struct {
 	Body       io.Reader
 }
 
+func (r *Response) Code() int {
+	return r.statusCode
+}
+
 func (r *Response) FirstLine() string {
 	return r.statusLine()
 }

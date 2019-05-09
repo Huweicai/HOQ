@@ -4,6 +4,7 @@ import (
 	"HOQ/hoq"
 	"HOQ/logs"
 	"HOQ/router"
+	"time"
 )
 
 func main() {
@@ -14,5 +15,6 @@ func main() {
 	}
 	r.Add("/hello", hoq.EchoHandler, hoq.MethodGET)
 	r.Add("/bye", hoq.ByeHandler, hoq.MethodGET)
+	go r.ShowRecordsCyclic(1 * time.Second)
 	logs.Error(r.Run())
 }

@@ -41,6 +41,10 @@ func (c *Client) Get(url string) (ctx *Context, err error) {
 	return c.Request(MethodGET, url, nil, nil)
 }
 
+func (c *Client) Head(url string) (ctx *Context, err error) {
+	return c.Request(MethodHead, url, nil, nil)
+}
+
 func (c *Client) Post(url string, body []byte) (ctx *Context, err error) {
 	return c.Request(MethodPOST, url, nil, bytes.NewReader(body))
 }
