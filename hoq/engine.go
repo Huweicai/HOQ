@@ -60,13 +60,7 @@ func newQuicEngine(handler Handler) *quicEngine {
 }
 
 func (t *tcpEngine) Serve(addr string) error {
-	cert, err := tls.LoadX509KeyPair("/Users/hwc/go/prjs/HOQ/cert/cert.pem", "/Users/hwc/go/prjs/HOQ/cert/key.pem")
-	if err != nil {
-		logs.Error(err)
-		return err
-	}
-	config := &tls.Config{Certificates: []tls.Certificate{cert}}
-	ln, err := tls.Listen("tcp", addr, config)
+	ln, err := tls.Listen("tcp", addr, generateTLSConfig())
 	if err != nil {
 		return err
 	}
@@ -111,7 +105,7 @@ func (t *tcpEngine) HandleConnection(con net.Conn) {
 }
 
 func (t *quicEngine) Serve(addr string) error {
-	listen, err := quic.ListenAddr(addr, generateTLSConfig(), nil)
+	listen, err := quic.ListenAddr(addr, generateTLSConfig(), &quic.Config{KeepAlive: false})
 	if err != nil {
 		return err
 	}

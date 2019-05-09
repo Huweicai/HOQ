@@ -1,6 +1,7 @@
 package hoq
 
 import (
+	"HOQ/logs"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
@@ -28,4 +29,13 @@ func generateTLSConfig() *tls.Config {
 		panic(err)
 	}
 	return &tls.Config{Certificates: []tls.Certificate{tlsCert}}
+}
+
+func genTLSConf() (*tls.Config, error) {
+	cert, err := tls.LoadX509KeyPair("/Users/hwc/go/prjs/HOQ/cert/cert.pem", "/Users/hwc/go/prjs/HOQ/cert/key.pem")
+	if err != nil {
+		logs.Error(err)
+		return nil, err
+	}
+	return &tls.Config{Certificates: []tls.Certificate{cert}}, nil
 }
