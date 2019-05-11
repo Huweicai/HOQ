@@ -105,7 +105,7 @@ func (t *tcpEngine) HandleConnection(con net.Conn) {
 }
 
 func (t *quicEngine) Serve(addr string) error {
-	listen, err := quic.ListenAddr(addr, generateTCPTLSConfig(), &quic.Config{KeepAlive: false})
+	listen, err := quic.ListenAddr(addr, generateTCPTLSConfig(), defaultQuicConfig)
 	if err != nil {
 		return err
 	}

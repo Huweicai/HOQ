@@ -82,7 +82,7 @@ func NewClient(engine NGType) (c *Client, err error) {
 	case EngineTcp:
 		return &Client{&TCPCourier{}}, nil
 	case EngineQuic:
-		return &Client{&QUICCourier{}}, nil
+		return &Client{newQUICCourier()}, nil
 	default:
 		return nil, UnsupportedEngine
 	}

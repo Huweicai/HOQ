@@ -2,7 +2,6 @@ package hoq
 
 import (
 	"crypto/tls"
-	"github.com/lucas-clemente/quic-go"
 )
 
 /**
@@ -33,13 +32,15 @@ func (t *TCPCourier) RoundTrip(req *Request) (resp *Response, remote *remoteInfo
 }
 
 type QUICCourier struct {
+	pool *quicConnPool
 }
 
 func (c *QUICCourier) RoundTrip(req *Request) (resp *Response, remote *remoteInfo, err error) {
 	if !req.ready() {
 		return nil, nil, RequestNotReadyErr
 	}
-	sess, err := quic.DialAddr(req.url.Host, &tls.Config{InsecureSkipVerify: true}, nil)
+	s, err := c.pool.get(req.url.Host)
+	sess := s.conn
 	if err != nil {
 		return
 	}
@@ -47,6 +48,7 @@ func (c *QUICCourier) RoundTrip(req *Request) (resp *Response, remote *remoteInf
 	if err != nil {
 		return
 	}
+	defer stream.Close()
 	err = req.Write(stream)
 	if err != nil {
 		return
@@ -54,6 +56,12 @@ func (c *QUICCourier) RoundTrip(req *Request) (resp *Response, remote *remoteInf
 	remote = &remoteInfo{addr: sess.RemoteAddr()}
 	resp, err = readResponse(stream)
 	return
+}
+
+func newQUICCourier() *QUICCourier {
+	return &QUICCourier{
+		pool: &quicConnPool{},
+	}
 }
 
 func (c *QUICCourier) GetSession() {

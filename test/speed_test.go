@@ -17,6 +17,10 @@ BenchmarkSpeed/TCP-4          	    3000	    363133 ns/op
 BenchmarkSpeed/QUIC-4         	     500	   2005767 ns/op
 BenchmarkSpeed/TCP-4          	     500	   2451111 ns/op
 
+第二次
+BenchmarkSpeed/QUIC-4         	    1000	   2000005 ns/op
+BenchmarkSpeed/TCP-4          	    1000	   1149463 ns/op
+
 第三次测试 同步quic tcp tls 配置
 */
 func BenchmarkSpeed(b *testing.B) {

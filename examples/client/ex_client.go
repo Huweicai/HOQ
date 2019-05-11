@@ -8,12 +8,10 @@ import (
 var headers = map[string]string{"User-Agent": "Firefox"}
 
 func main() {
-	nc, _ := hoq.NewClient(hoq.EngineTcp)
+	nc, _ := hoq.NewClient(hoq.EngineQuic)
 	//ctx, err := nc.Request(hoq.MethodGET, "http://127.0.0.1:8787", hoq.NewHeaders(headers), strings.NewReader("666666666"))
 	for i := 0; i < 1000; i++ {
-		ctx, err := nc.Head("https://127.0.0.1:8787/hello")
-		ctx, err = nc.Get("https://127.0.0.1:8787/bye")
-		ctx, err = nc.Post("https://127.0.0.1:8787/hello", nil)
+		ctx, err := nc.Get("https://127.0.0.1:8787/hello")
 		if err != nil {
 			logs.Error(err)
 			continue

@@ -2,6 +2,7 @@ package hoq
 
 import (
 	"HOQ/util"
+	"crypto/tls"
 	"github.com/lucas-clemente/quic-go"
 	"sync"
 	"time"
@@ -58,8 +59,12 @@ func (p *quicConnPool) add(conn *quicConn) bool {
 	return true
 }
 
+var defaultQuicConfig = &quic.Config{
+	KeepAlive: true,
+}
+
 func (p *quicConnPool) make(addr string) (conn *quicConn, err error) {
-	sess, err := quic.DialAddr(addr, generateTCPTLSConfig(), nil)
+	sess, err := quic.DialAddr(addr, &tls.Config{InsecureSkipVerify: true}, defaultQuicConfig)
 	return &quicConn{addr: addr, conn: sess, uTime: ut.Now(), cTime: ut.Now()}, err
 }
 
