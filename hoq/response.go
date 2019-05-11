@@ -119,6 +119,10 @@ func read(reader io.Reader, r Message) (err error) {
 	if err != nil {
 		return
 	}
+	//(Section 5.3 of [RFC7230])
+	if len(line) > 1000 {
+		return NewErrWithCode(StatusRequestURITooLong, "uri too long")
+	}
 	//1st
 	err = r.EatFirstLine(line)
 	if err != nil {
@@ -142,7 +146,6 @@ func read(reader io.Reader, r Message) (err error) {
 
 /**
 序列化成文本便于传输
-todo body是否需要单独抽出来？
 或许序列化先只需要序列化报文头部分
 Deprecated
 */

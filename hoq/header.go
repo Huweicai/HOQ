@@ -2,6 +2,7 @@ package hoq
 
 import (
 	"io"
+	"net/http"
 	"net/textproto"
 	"strconv"
 	"strings"
@@ -64,6 +65,13 @@ func (h *Headers) ContentLength() int64 {
 	return int64(i)
 }
 
+/**
+判断Header是否存在
+*/
+func (h *Headers) Exits(k string) bool {
+	_, ok := h.headers[k]
+	return ok
+}
 func (h *Headers) Serialize() string {
 	out := ""
 	//todo check omit values after the first one
@@ -85,8 +93,9 @@ func (h *Headers) GenContentLength(body io.Reader) bool {
 	return true
 }
 
-func (h *Headers) Set(k, v string) {
+func (h *Headers) Set(k, v string) *Headers {
 	h.headers[k] = v
+	return h
 }
 
 func (h *Headers) Get(k string) string {
@@ -106,4 +115,15 @@ func mimeHeaderToMap(mime textproto.MIMEHeader) map[string]string {
 		m[key] = values[0]
 	}
 	return m
+}
+
+func convertHttpHeader(hd http.Header) *Headers {
+	m := make(map[string]string)
+	for k, vs := range hd {
+		if len(vs) == 0 {
+			continue
+		}
+		m[k] = vs[0]
+	}
+	return NewHeaders(m)
 }

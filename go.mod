@@ -3,7 +3,7 @@ module HOQ
 go 1.12
 
 require (
-	github.com/golang/mock v1.3.0 // indirect
+	github.com/golang/mock v1.3.0
 	github.com/lucas-clemente/quic-go v0.11.1
 	github.com/onsi/ginkgo v1.8.0 // indirect
 	github.com/onsi/gomega v1.5.0 // indirect

@@ -12,6 +12,8 @@ var headerBodySepBytes = []byte("\r\n")
 const headerBodySepStr = "\r\n"
 
 const (
+	minProto     = "HTTP/1.0"
+	maxProto     = "HTTP/2.0"
 	defaultProto = "HTTP/1.1"
 
 	ProtoHTTP  = "http"

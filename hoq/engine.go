@@ -60,7 +60,7 @@ func newQuicEngine(handler Handler) *quicEngine {
 }
 
 func (t *tcpEngine) Serve(addr string) error {
-	ln, err := tls.Listen("tcp", addr, generateTLSConfig())
+	ln, err := tls.Listen("tcp", addr, generateTCPTLSConfig())
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func (t *tcpEngine) HandleConnection(con net.Conn) {
 }
 
 func (t *quicEngine) Serve(addr string) error {
-	listen, err := quic.ListenAddr(addr, generateTLSConfig(), &quic.Config{KeepAlive: false})
+	listen, err := quic.ListenAddr(addr, generateTCPTLSConfig(), &quic.Config{KeepAlive: false})
 	if err != nil {
 		return err
 	}

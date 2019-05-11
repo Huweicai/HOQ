@@ -12,13 +12,13 @@ const (
 	MethodTRACE   = "TRACE"
 )
 
-var methods = []string{MethodGET, MethodHead, MethodPOST, MethodPUT, MethodDELETE, MethodCONNECT, MethodOPTIONS, MethodOPTIONS, MethodTRACE}
+var Methods = []string{MethodGET, MethodHead, MethodPOST, MethodPUT, MethodDELETE, MethodCONNECT, MethodOPTIONS, MethodOPTIONS, MethodTRACE}
 
 /**
 是否在支持的八种方法中
 */
 func IsSupportedMethod(method string) bool {
-	for _, me := range methods {
+	for _, me := range Methods {
 		if me == method {
 			return true
 		}

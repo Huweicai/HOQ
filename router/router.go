@@ -3,8 +3,10 @@ package router
 import (
 	"HOQ/hoq"
 	"HOQ/logs"
+	"HOQ/util"
 	"errors"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -23,8 +25,9 @@ type Router struct {
 	adaptiveTrailingSlash bool
 	addr                  string
 	//为了性能，不加锁并发安全，一旦启动就进入只读模式，无法再修改
-	started bool
-	root    *node
+	started       bool
+	root          *node
+	bannedMethods []string
 	//handler 执行前拦截器
 	preInterFunc []PreInterceptor
 	//handler 执行后拦截器
@@ -36,24 +39,36 @@ type Router struct {
 	recordMutex sync.Mutex
 }
 
-func (r *Router) ShowRecordsCyclic(d time.Duration) {
+/**
+禁止某一种Method的使用
+*/
+func (t *Router) BanMethod(method string) bool {
+	t.assertNotStarted()
+	if !hoq.IsSupportedMethod(method) {
+		return false
+	}
+	t.bannedMethods = append(t.bannedMethods, method)
+	return true
+}
+
+func (t *Router) ShowRecordsCyclic(d time.Duration) {
 	tk := time.Tick(d)
 	for range tk {
-		r.printRecords()
+		t.printRecords()
 	}
 }
 
 /**
 输出记录信息
 */
-func (r *Router) printRecords() {
-	r.recordMutex.Lock()
-	defer r.recordMutex.Unlock()
+func (t *Router) printRecords() {
+	t.recordMutex.Lock()
+	defer t.recordMutex.Unlock()
 	//methods
 	methodRecords := make(map[string]int)
 	pathRecords := make(map[string]int)
 	respCodeRecords := make(map[string]int)
-	for k, v := range r.records {
+	for k, v := range t.records {
 		if len(k) < 2 {
 			logs.Error("unexpected short record key ", k)
 			continue
@@ -85,14 +100,14 @@ func m2String(m map[string]int) string {
 /**
 记录信息，处理器
 */
-func (r *Router) record() {
-	for rcd := range r.recordChan {
+func (t *Router) record() {
+	for rcd := range t.recordChan {
 		if rcd == nil {
 			continue
 		}
-		r.recordMutex.Lock()
-		r.records[rcd.k] += rcd.i
-		r.recordMutex.Unlock()
+		t.recordMutex.Lock()
+		t.records[rcd.k] += rcd.i
+		t.recordMutex.Unlock()
 	}
 }
 
@@ -152,6 +167,11 @@ func (t *Router) main(ctx *hoq.Context) (rsp *hoq.Response) {
 	}()
 	m := ctx.Request.Method()
 	u := ctx.Request.URL()
+	if ut.Contain(m, t.bannedMethods) {
+		allows := ut.SliceReduce(hoq.Methods, t.bannedMethods)
+		//banned
+		return hoq.FastResponse(hoq.StatusMethodNotAllowed, defaultHeader().Set("Allow", strings.Join(allows, ",")))
+	}
 	handler := t.Find(m, u.Path)
 	if handler == nil {
 		return notFoundResp

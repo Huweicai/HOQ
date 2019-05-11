@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"strings"
 )
@@ -105,7 +106,35 @@ convert a io.Reader to a HTTP request
 func readRequest(reader io.Reader) (r *Request, err error) {
 	r = &Request{}
 	err = read(reader, r)
+	if err != nil {
+		return
+	}
+	err = validateRequest(r)
 	return
+}
+
+/**
+根据RFC定义，校验request格式
+*/
+func validateRequest(r *Request) error {
+	//method post 未标注ContentLength，
+	// (Section 3.3.2 of [RFC7230])
+	if r.method == MethodPOST && !r.headers.Exits(HeaderContentLength) {
+		return NewErrWithCode(StatusLengthRequired, "header length is required")
+	}
+	//RFC  6.5.11.  413 Payload Too Large
+	if r.headers.ContentLength() > 300000 {
+		return NewErrWithCode(StatusRequestEntityTooLarge, "Payload Too Large")
+	}
+	//RFC 6.5.15.  426 Upgrade Required
+	//HTTP/1.0 HTTP/0.9
+	if r.proto < minProto {
+		return NewErrWithCode(StatusUpgradeRequired, "Upgrade Required")
+	}
+	if r.proto > maxProto {
+		return NewErrWithCode(StatusHTTPVersionNotSupported, "version too high too support")
+	}
+	return nil
 }
 
 /**
@@ -228,4 +257,8 @@ todo implements it
 */
 func (r *Request) ready() bool {
 	return true
+}
+
+func (r *Request) wrap() (*http.Request, error) {
+	return http.NewRequest(r.method, r.url.String(), r.Body)
 }
