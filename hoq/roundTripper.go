@@ -8,13 +8,13 @@ import (
 快递员：负责将上层传入的请求发出并捕获对应的服务端响应
 */
 type Courier interface {
-	RoundTrip(*Request) (*Response, *remoteInfo, error)
+	RoundTrip(*Request) (*Response, *RemoteInfo, error)
 }
 
 type TCPCourier struct {
 }
 
-func (t *TCPCourier) RoundTrip(req *Request) (resp *Response, remote *remoteInfo, err error) {
+func (t *TCPCourier) RoundTrip(req *Request) (resp *Response, remote *RemoteInfo, err error) {
 	conf := &tls.Config{
 		InsecureSkipVerify: true,
 	}
@@ -26,7 +26,7 @@ func (t *TCPCourier) RoundTrip(req *Request) (resp *Response, remote *remoteInfo
 	if err != nil {
 		return
 	}
-	remote = &remoteInfo{addr: conn.RemoteAddr()}
+	remote = &RemoteInfo{addr: conn.RemoteAddr()}
 	resp, err = readResponse(conn)
 	return
 }
@@ -35,7 +35,7 @@ type QUICCourier struct {
 	pool *quicConnPool
 }
 
-func (c *QUICCourier) RoundTrip(req *Request) (resp *Response, remote *remoteInfo, err error) {
+func (c *QUICCourier) RoundTrip(req *Request) (resp *Response, remote *RemoteInfo, err error) {
 	if !req.ready() {
 		return nil, nil, RequestNotReadyErr
 	}
@@ -53,7 +53,7 @@ func (c *QUICCourier) RoundTrip(req *Request) (resp *Response, remote *remoteInf
 	if err != nil {
 		return
 	}
-	remote = &remoteInfo{addr: sess.RemoteAddr()}
+	remote = &RemoteInfo{addr: sess.RemoteAddr()}
 	resp, err = readResponse(stream)
 	return
 }

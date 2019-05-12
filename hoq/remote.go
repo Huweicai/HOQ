@@ -2,6 +2,6 @@ package hoq
 
 import "net"
 
-type remoteInfo struct {
+type RemoteInfo struct {
 	addr net.Addr
 }

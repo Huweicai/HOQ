@@ -3,7 +3,7 @@ package hoq
 import "time"
 
 type Context struct {
-	Remote   *remoteInfo
+	Remote   *RemoteInfo
 	Request  *Request
 	Response *Response
 }

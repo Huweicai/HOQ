@@ -9,7 +9,7 @@ import (
 )
 
 type Server struct {
-	engine  engine
+	engine  Engine
 	addr    string
 	handler Handler
 }

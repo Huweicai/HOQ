@@ -20,7 +20,7 @@ var UnsupportedEngine = errors.New("unsupported enginee")
 /*
 new a transporter according to it's name
 */
-func newEngine(engine NGType, handler Handler) (engine, error) {
+func newEngine(engine NGType, handler Handler) (Engine, error) {
 	switch engine {
 	case EngineTcp:
 		return newTcpEngine(handler), nil
@@ -34,7 +34,7 @@ func newEngine(engine NGType, handler Handler) (engine, error) {
 /**
   底层运输载体，目前支持tcp , quic 两种
 */
-type engine interface {
+type Engine interface {
 	Serve(addr string) error
 	Name() string
 }
@@ -84,7 +84,7 @@ func (t *tcpEngine) HandleConnection(con net.Conn) {
 	case nil:
 		resp = t.handler(&Context{
 			Request: req,
-			Remote: &remoteInfo{
+			Remote: &RemoteInfo{
 				addr: con.RemoteAddr(),
 			},
 		})
@@ -147,7 +147,7 @@ func (t *quicEngine) HandleStream(sess quic.Session, stream quic.Stream) {
 	case nil:
 		resp = t.handler(&Context{
 			Request: req,
-			Remote: &remoteInfo{
+			Remote: &RemoteInfo{
 				addr: sess.RemoteAddr(),
 			},
 		})

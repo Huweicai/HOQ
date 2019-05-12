@@ -6,7 +6,7 @@ type QUICCourierHA struct {
 	rt *h2quic.RoundTripper
 }
 
-func (q *QUICCourierHA) RoundTrip(req *Request) (resp *Response, remote *remoteInfo, err error) {
+func (q *QUICCourierHA) RoundTrip(req *Request) (resp *Response, remote *RemoteInfo, err error) {
 	r, err := req.wrap()
 	if err != nil {
 		return
@@ -19,6 +19,6 @@ func (q *QUICCourierHA) RoundTrip(req *Request) (resp *Response, remote *remoteI
 	if err != nil {
 		return
 	}
-	remote = &remoteInfo{}
+	remote = &RemoteInfo{}
 	return
 }
