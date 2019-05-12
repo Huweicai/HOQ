@@ -2,10 +2,9 @@
 // Source: HOQ/hoq (interfaces: Courier)
 
 // Package mock is a generated GoMock package.
-package mock
+package hoq
 
 import (
-	hoq "HOQ/hoq"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )
@@ -34,10 +33,10 @@ func (m *MockCourier) EXPECT() *MockCourierMockRecorder {
 }
 
 // RoundTrip mocks base method
-func (m *MockCourier) RoundTrip(arg0 *hoq.Request) (*hoq.Response, *hoq.RemoteInfo, error) {
+func (m *MockCourier) RoundTrip(arg0 *Request) (*Response, *RemoteInfo, error) {
 	ret := m.ctrl.Call(m, "RoundTrip", arg0)
-	ret0, _ := ret[0].(*hoq.Response)
-	ret1, _ := ret[1].(*hoq.RemoteInfo)
+	ret0, _ := ret[0].(*Response)
+	ret1, _ := ret[1].(*RemoteInfo)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
 }

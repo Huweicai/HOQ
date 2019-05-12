@@ -2,7 +2,7 @@
 // Source: HOQ/hoq (interfaces: Engine)
 
 // Package mock is a generated GoMock package.
-package mock
+package hoq
 
 import (
 	gomock "github.com/golang/mock/gomock"

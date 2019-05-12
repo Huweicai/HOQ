@@ -2,10 +2,9 @@
 // Source: HOQ/hoq (interfaces: Message)
 
 // Package mock is a generated GoMock package.
-package mock
+package hoq
 
 import (
-	hoq "HOQ/hoq"
 	gomock "github.com/golang/mock/gomock"
 	io "io"
 	reflect "reflect"
@@ -71,9 +70,9 @@ func (mr *MockMessageMockRecorder) GetBody() *gomock.Call {
 }
 
 // GetHeader mocks base method
-func (m *MockMessage) GetHeader() *hoq.Headers {
+func (m *MockMessage) GetHeader() *Headers {
 	ret := m.ctrl.Call(m, "GetHeader")
-	ret0, _ := ret[0].(*hoq.Headers)
+	ret0, _ := ret[0].(*Headers)
 	return ret0
 }
 
@@ -93,7 +92,7 @@ func (mr *MockMessageMockRecorder) SetBody(arg0 interface{}) *gomock.Call {
 }
 
 // SetHeader mocks base method
-func (m *MockMessage) SetHeader(arg0 *hoq.Headers) {
+func (m *MockMessage) SetHeader(arg0 *Headers) {
 	m.ctrl.Call(m, "SetHeader", arg0)
 }
 

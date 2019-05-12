@@ -2,7 +2,7 @@
 // Source: HOQ/hoq (interfaces: QuicSession)
 
 // Package hoq is a generated GoMock package.
-package hmock
+package hoq
 
 import (
 	"context"
