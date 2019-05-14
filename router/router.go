@@ -269,3 +269,13 @@ func (t *Router) Find(method, path string) hoq.Handler {
 	logs.Info("found node ", nd.val)
 	return nil
 }
+
+/**
+新建一个Group
+*/
+func (t *Router) Group(path string) *Group {
+	return &Group{
+		prefix: path,
+		t:      t,
+	}
+}
