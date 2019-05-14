@@ -3,6 +3,7 @@ package router
 import (
 	"HOQ/hoq"
 	"HOQ/logs"
+	"HOQ/util"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -61,6 +62,9 @@ func TestNodes(t *testing.T) {
 	xNode.addChild(yNode)
 	//can't add node with out any relation except root ""
 	assert.Equal(0, len(xNode.children))
+	rt.sort()
+	ut.Nothing()
+	assert.True(rt.children[len(rt.children)-1].priority <= rt.children[0].priority)
 }
 
 func TestNodeMerge(t *testing.T) {

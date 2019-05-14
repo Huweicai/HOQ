@@ -3,6 +3,7 @@ package router
 import (
 	"HOQ/hoq"
 	ut "HOQ/util"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -13,15 +14,29 @@ func NewSimpleNode(val string) *node {
 	}
 }
 
+/**
+一个路由节点
+*/
 type node struct {
-	father *node
-	val    string
-	//已注册支持的methods
+	father          *node
+	val             string
 	allowAllMethods bool
 	methods         []string
-	//处理器
-	handler  hoq.Handler
-	children []*node
+	handler         hoq.Handler
+	children        []*node
+	priority        int
+}
+
+func (n *node) Len() int {
+	return len(n.children)
+}
+
+func (n *node) Less(i, j int) bool {
+	return n.children[i].priority > n.children[j].priority
+}
+
+func (n *node) Swap(i, j int) {
+	n.children[i], n.children[j] = n.children[j], n.children[i]
 }
 
 func (n *node) hasSameSuffixWithChild(c *node) *node {
@@ -275,6 +290,19 @@ func (n *node) print() (out string) {
 		out += "\n"
 	}
 	return
+}
+
+/**
+准备运行前需要调用一次
+根据节点数量排序，节点多的权重大
+放前头
+*/
+func (n *node) sort() {
+	n.priority = n.size()
+	for _, c := range n.children {
+		c.sort()
+	}
+	sort.Sort(n)
 }
 
 /*

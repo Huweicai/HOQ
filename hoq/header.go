@@ -8,11 +8,14 @@ import (
 	"strings"
 )
 
+//todo 限制头部字段单个字段大小不得超过9000，请求中最多有120个字段
+//todo 添加Date和X-Powered-By ，客户端添加User-Agent头字段
 const (
 	HeaderContentLength = "Content-Length"
 	HeaderHost          = "Host"
 	HeaderUserAgent     = "User-Agent"
 	HeaderConnection    = "Connection"
+	HeaderDate          = "Date"
 )
 
 /**

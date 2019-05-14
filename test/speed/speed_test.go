@@ -1,4 +1,4 @@
-package main_test
+package speed_test
 
 import (
 	"HOQ/hoq"

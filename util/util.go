@@ -107,3 +107,11 @@ func Now() *time.Time {
 	t := time.Now()
 	return &t
 }
+
+/**
+for unused error
+but doing nothing
+*/
+func Nothing(i ...interface{}) {
+
+}

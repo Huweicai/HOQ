@@ -211,6 +211,7 @@ func (t *Router) parseFlags(flags int) {
 */
 func (t *Router) Run() error {
 	t.started = true
+	t.root.sort()
 	logs.Info("router started...")
 	return t.server.Run(t.addr)
 }
