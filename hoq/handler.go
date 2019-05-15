@@ -4,7 +4,6 @@ type Handler func(ctx *Context) *Response
 
 /**
 a simple echo handler for test
-todo Handler panic 处理，避免用户错误导致系统crash
 */
 func EchoHandler(ctx *Context) *Response {
 	body, _ := ctx.Request.ReadBody()

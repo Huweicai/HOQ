@@ -8,6 +8,9 @@ var (
 	MalformedURLErr     = errors.New("malformed url")
 	ResponseNotReadyErr = errors.New("response not valid ")
 	RequestNotReadyErr  = errors.New("request not valid")
+
+	ConnectTimeoutErr = errors.New("connection timeout")
+	RequestTimeoutErr = errors.New("request timeout")
 )
 
 type ErrWithCode struct {

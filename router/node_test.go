@@ -127,6 +127,9 @@ func TestList(t *testing.T) {
 
 /**
 radix 树和哈希性能对比
+
+BenchmarkNode/Radix-4         	 5000000	       358 ns/op
+BenchmarkNode/Hash-4          	10000000	       151 ns/op
 */
 func BenchmarkNode(b *testing.B) {
 	testRadix := NewSimpleNode("")
@@ -136,7 +139,7 @@ func BenchmarkNode(b *testing.B) {
 	for i := 0; i < total; i++ {
 		add(testRadix, testHash, prefix+strconv.Itoa(i))
 	}
-	b.Run("Hash", func(b *testing.B) {
+	b.Run("Radix", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			x := rand.Intn(total)
 			s := prefix + strconv.Itoa(x)
@@ -146,7 +149,7 @@ func BenchmarkNode(b *testing.B) {
 			}
 		}
 	})
-	b.Run("Radix", func(b *testing.B) {
+	b.Run("Hash", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
 			x := rand.Intn(total)
 			s := prefix + strconv.Itoa(x)

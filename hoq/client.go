@@ -1,23 +1,36 @@
 package hoq
 
 import (
+	"HOQ/logs"
 	"bytes"
 	"crypto/tls"
 	"github.com/lucas-clemente/quic-go"
 	"io"
 	"log"
+	"time"
 )
+
+const defaultReqTimeout = 5 * time.Second
 
 /**
 包装部分默认行为，简化API
 */
-var defaultClient = Client{&QUICCourier{}}
+var defaultClient = Client{engine: &QUICCourier{}, reqTimeout: defaultReqTimeout}
 
 /**
 HTTP客户端，用于发起请求
 */
 type Client struct {
-	engine Courier
+	//超时时长
+	reqTimeout time.Duration
+	engine     Courier
+}
+
+/**
+设置请求超时时间
+*/
+func (c *Client) SetReqTimeout(t time.Duration) {
+	c.reqTimeout = t
 }
 
 /**
@@ -28,7 +41,20 @@ func (c *Client) Request(method, targetUrl string, headers *Headers, body io.Rea
 	if err != nil {
 		return
 	}
-	resp, remoteInfo, err := c.engine.RoundTrip(req)
+	doneChan := make(chan int)
+	var resp *Response
+	var remoteInfo *RemoteInfo
+	go func() {
+		resp, remoteInfo, err = c.engine.RoundTrip(req)
+		doneChan <- 0
+	}()
+	select {
+	case <-doneChan:
+		logs.Debug("request finished before timeout")
+	case <-time.After(c.reqTimeout):
+		err = RequestTimeoutErr
+		return
+	}
 	ctx = &Context{
 		Request:  req,
 		Response: resp,
@@ -80,9 +106,9 @@ func Post(url string, body []byte) (ctx *Context, err error) {
 func NewClient(engine NGType) (c *Client, err error) {
 	switch engine {
 	case EngineTcp:
-		return &Client{&TCPCourier{}}, nil
+		return &Client{engine: &TCPCourier{}}, nil
 	case EngineQuic:
-		return &Client{newQUICCourier()}, nil
+		return &Client{engine: newQUICCourier()}, nil
 	default:
 		return nil, UnsupportedEngine
 	}

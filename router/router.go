@@ -21,6 +21,9 @@ const (
 var notFoundResp = hoq.FastResponse(hoq.StatusNotFound, defaultHeader())
 var innerErrResp = hoq.FastResponse(hoq.StatusInternalServerError, defaultHeader())
 
+/**
+todo 限流及QPS统计
+*/
 type Router struct {
 	adaptiveTrailingSlash bool
 	addr                  string

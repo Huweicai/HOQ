@@ -20,8 +20,9 @@ type QuicSession interface {
 }
 
 type quicConnPool struct {
-	lock sync.Mutex
-	pool map[string][]*quicConn
+	connTimeout time.Duration
+	lock        sync.Mutex
+	pool        map[string][]*quicConn
 }
 
 /**
@@ -64,7 +65,10 @@ var defaultQuicConfig = &quic.Config{
 }
 
 func (p *quicConnPool) make(addr string) (conn *quicConn, err error) {
-	sess, err := quic.DialAddr(addr, &tls.Config{InsecureSkipVerify: true}, defaultQuicConfig)
+	sess, err := quic.DialAddr(addr, &tls.Config{InsecureSkipVerify: true}, &quic.Config{
+		KeepAlive:        true,
+		HandshakeTimeout: p.connTimeout,
+	})
 	return &quicConn{addr: addr, conn: sess, uTime: ut.Now(), cTime: ut.Now()}, err
 }
 
