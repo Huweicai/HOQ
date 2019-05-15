@@ -20,12 +20,12 @@ var UnsupportedEngine = errors.New("unsupported enginee")
 /*
 new a transporter according to it's name
 */
-func newEngine(engine NGType, handler Handler) (Engine, error) {
+func newEngine(engine NGType, s *Server) (Engine, error) {
 	switch engine {
 	case EngineTcp:
-		return newTcpEngine(handler), nil
+		return newTcpEngine(s), nil
 	case EngineQuic:
-		return newQuicEngine(handler), nil
+		return newQuicEngine(s), nil
 	default:
 		return nil, UnsupportedEngine
 	}
@@ -40,22 +40,22 @@ type Engine interface {
 }
 
 type tcpEngine struct {
-	handler Handler
+	s *Server
 }
 
-func newTcpEngine(handler Handler) *tcpEngine {
+func newTcpEngine(s *Server) *tcpEngine {
 	return &tcpEngine{
-		handler: handler,
+		s: s,
 	}
 }
 
 type quicEngine struct {
-	handler Handler
+	s *Server
 }
 
-func newQuicEngine(handler Handler) *quicEngine {
+func newQuicEngine(s *Server) *quicEngine {
 	return &quicEngine{
-		handler: handler,
+		s: s,
 	}
 }
 
@@ -82,7 +82,7 @@ func (t *tcpEngine) HandleConnection(con net.Conn) {
 	//error handler
 	switch e := err.(type) {
 	case nil:
-		resp = t.handler(&Context{
+		resp = t.s.handle(&Context{
 			Request: req,
 			Remote: &RemoteInfo{
 				addr: con.RemoteAddr(),
@@ -145,7 +145,7 @@ func (t *quicEngine) HandleStream(sess quic.Session, stream quic.Stream) {
 	//error handler
 	switch e := err.(type) {
 	case nil:
-		resp = t.handler(&Context{
+		resp = t.s.handle(&Context{
 			Request: req,
 			Remote: &RemoteInfo{
 				addr: sess.RemoteAddr(),

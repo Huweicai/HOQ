@@ -41,6 +41,7 @@ func (c *Client) Request(method, targetUrl string, headers *Headers, body io.Rea
 	if err != nil {
 		return
 	}
+	req.headers.GenDate()
 	doneChan := make(chan int)
 	var resp *Response
 	var remoteInfo *RemoteInfo
@@ -106,9 +107,9 @@ func Post(url string, body []byte) (ctx *Context, err error) {
 func NewClient(engine NGType) (c *Client, err error) {
 	switch engine {
 	case EngineTcp:
-		return &Client{engine: &TCPCourier{}}, nil
+		return &Client{engine: &TCPCourier{}, reqTimeout: defaultReqTimeout}, nil
 	case EngineQuic:
-		return &Client{engine: newQUICCourier()}, nil
+		return &Client{engine: newQUICCourier(), reqTimeout: defaultReqTimeout}, nil
 	default:
 		return nil, UnsupportedEngine
 	}

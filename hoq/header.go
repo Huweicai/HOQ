@@ -6,6 +6,7 @@ import (
 	"net/textproto"
 	"strconv"
 	"strings"
+	"time"
 )
 
 //todo 限制头部字段单个字段大小不得超过9000，请求中最多有120个字段
@@ -24,6 +25,14 @@ const (
 */
 type Headers struct {
 	headers map[string]string
+}
+
+/**
+生成Date字段
+*/
+func (h *Headers) GenDate() {
+	now := time.Now().UTC().String()
+	h.headers[HeaderDate] = now
 }
 
 /**
