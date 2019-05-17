@@ -24,10 +24,10 @@ func TestClient(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	c, err := NewClient(EngineQuic)
-	c.SetReqTimeout(1 * time.Second)
+	c.SetReqTimeout(300 * time.Millisecond)
 	guard := monkey.Patch((*QUICCourier).RoundTrip, func(_ *QUICCourier, req *Request) (*Response, *RemoteInfo, error) {
 		logs.Info("begin sleep")
-		time.Sleep(3 * time.Second)
+		time.Sleep(500 * time.Millisecond)
 		logs.Info("sleep finished")
 		return nil, nil, nil
 	})

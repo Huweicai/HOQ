@@ -52,7 +52,7 @@ func generateQuicTLSConfig() *tls.Config {
 }
 
 func genTLSConf() (*tls.Config, error) {
-	cert, err := tls.LoadX509KeyPair("/Users/hwc/go/prjs/HOQ/cert/cert.pem", "/Users/hwc/go/prjs/HOQ/cert/key.pem")
+	cert, err := tls.LoadX509KeyPair("/Users/hwc/go/prjs/HOQ/test_cert/cert.pem", "/Users/hwc/go/prjs/HOQ/test_cert/key.pem")
 	if err != nil {
 		logs.Error(err)
 		return nil, err

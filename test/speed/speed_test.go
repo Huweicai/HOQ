@@ -6,6 +6,8 @@ import (
 	"testing"
 )
 
+const testTxt = "ifdgkldjldsfjklasdfsdajflsdknxczm,vnsdkjfhaweofjhweoifjsdlkfjsadklfjsadkljfdsaklfjsadlkfsdajf;lsdjflsadjfl;sdafsadl"
+
 /**
 第一次测试，quic tls VS 纯tcp
 BenchmarkSpeed/QUIC-4         	    1000	   1924844 ns/op

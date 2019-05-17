@@ -33,7 +33,7 @@ func TestMockDemo(t *testing.T) {
 	sessClient.EXPECT().Close().Return(errors.New("error failed"))
 	//正常调用
 	err := sessClient.Close()
-	logs.Error(err)
+	logs.Info(err)
 	assert.Error(t, err)
 	assert.Equal(t, "error failed", err.Error())
 }
