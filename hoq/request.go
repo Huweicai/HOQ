@@ -2,6 +2,9 @@ package hoq
 
 import (
 	"bytes"
+	"compress/flate"
+	"compress/gzip"
+	"compress/zlib"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -141,11 +144,24 @@ func validateRequest(r *Request) error {
 /**
 read body into bytes not just get the body in Reader format
 */
-func (r *Request) ReadBody() ([]byte, error) {
+func (r *Request) ReadBody() (body []byte, err error) {
 	if !existBody(r.Body) {
 		return nil, nil
 	}
-	return ioutil.ReadAll(r.Body)
+	reader := r.Body
+	switch r.headers.Get("Content-Encoding") {
+	case "gzip":
+		reader, err = gzip.NewReader(r.Body)
+	case "flate":
+		reader = flate.NewReader(r.Body)
+	case "zlib":
+		reader, err = zlib.NewReader(r.Body)
+	default:
+	}
+	if err != nil {
+		return
+	}
+	return ioutil.ReadAll(reader)
 }
 
 func (r *Request) Response(code int, headers *Headers, body []byte) (rsp *Response, err error) {
