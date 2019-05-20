@@ -78,6 +78,7 @@ func NewRequest(method, targetUrl string, headers *Headers, body io.Reader) (r *
 		headers = NewHeaders(nil)
 	}
 	headers.GenContentLength(body)
+	headers.GenCookies(u)
 	r = &Request{
 		method:  method,
 		Body:    body,

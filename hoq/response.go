@@ -63,6 +63,10 @@ func (r *Response) GetHeader() *Headers {
 	return r.headers
 }
 
+func (r *Response) AddHeader(k, v string) {
+	r.headers.Set(k, v)
+}
+
 /**
 常用Response
 */

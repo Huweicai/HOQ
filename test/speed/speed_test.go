@@ -1,12 +1,10 @@
-package speed_test
+package main
 
 import (
 	"HOQ/hoq"
 	"HOQ/logs"
 	"testing"
 )
-
-const testTxt = "ifdgkldjldsfjklasdfsdajflsdknxczm,vnsdkjfhaweofjhweoifjsdlkfjsadklfjsadkljfdsaklfjsadlkfsdajf;lsdjflsadjfl;sdafsadl"
 
 /**
 第一次测试，quic tls VS 纯tcp

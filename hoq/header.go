@@ -4,13 +4,13 @@ import (
 	"io"
 	"net/http"
 	"net/textproto"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
 )
 
 //todo 限制头部字段单个字段大小不得超过9000，请求中最多有120个字段
-//todo 添加Date和X-Powered-By ，客户端添加User-Agent头字段
 const (
 	HeaderContentLength = "Content-Length"
 	HeaderHost          = "Host"
@@ -24,7 +24,9 @@ const (
 针对Host等字段需要单独定义
 */
 type Headers struct {
-	headers map[string]string
+	headers    map[string]string
+	gotCookies []*Cookie
+	setCookies []*Cookie
 }
 
 /**
@@ -45,6 +47,11 @@ func NewHeaders(m map[string]string) *Headers {
 	return &Headers{headers: m}
 }
 
+func (h *Headers) GenCookies(u *url.URL) {
+	cks := jar.GetCookies(u)
+	h.gotCookies = append(h.gotCookies, cks...)
+}
+
 /**
 从Reader中读入Header
 */
@@ -53,8 +60,10 @@ func ReadHeaders(reader *textproto.Reader) (*Headers, error) {
 	if err != nil {
 		return nil, err
 	}
+	setCookies := readSetCookies(mimeHeader)
+	gotCookies := readGotCookies(mimeHeader)
 	m := mimeHeaderToMap(mimeHeader)
-	return &Headers{m}, nil
+	return &Headers{headers: m, setCookies: setCookies, gotCookies: gotCookies}, nil
 }
 
 /**
@@ -85,15 +94,17 @@ func (h *Headers) Exits(k string) bool {
 	return ok
 }
 func (h *Headers) Serialize() string {
-	out := ""
+	b := strings.Builder{}
+	b.WriteString(h.serializeGotCookies())
+	b.WriteString(h.serializeSetCookies())
 	//todo check omit values after the first one
 	for name, value := range h.headers {
 		if value == "" {
 			continue
 		}
-		out += name + ": " + value + headerBodySepStr
+		b.WriteString(name + ": " + value + headerBodySepStr)
 	}
-	return strings.TrimSuffix(out, headerBodySepStr)
+	return strings.TrimSuffix(b.String(), headerBodySepStr)
 }
 
 func (h *Headers) GenContentLength(body io.Reader) bool {
@@ -138,4 +149,32 @@ func convertHttpHeader(hd http.Header) *Headers {
 		m[k] = vs[0]
 	}
 	return NewHeaders(m)
+}
+
+func (h *Headers) serializeSetCookies() string {
+	out := ""
+	for _, ck := range h.gotCookies {
+		out += "Set-Cookie: " + ck.String() + headerBodySepStr
+	}
+	return out
+}
+
+func (h *Headers) serializeGotCookies() string {
+	if len(h.gotCookies) == 0 {
+		return ""
+	}
+	out := "Cookies: "
+	for _, ck := range h.gotCookies {
+		out += ck.KVString() + headerBodySepStr
+	}
+	return out
+}
+
+func (h *Headers) AddSetCookie(c *Cookie) {
+	h.setCookies = append(h.setCookies, c)
+
+}
+
+func (h *Headers) AddGotCookie(c *Cookie) {
+	h.gotCookies = append(h.gotCookies, c)
 }
