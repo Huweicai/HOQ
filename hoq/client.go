@@ -47,7 +47,7 @@ func (c *Client) Request(method, targetUrl string, headers *Headers, body io.Rea
 	var remoteInfo *RemoteInfo
 	go func() {
 		resp, remoteInfo, err = c.engine.RoundTrip(req)
-		jar.SetCookies(req.URL(), resp.headers.setCookies)
+		jar.SetCookies(req.URL(), req.headers.setCookies)
 		doneChan <- 0
 	}()
 	select {
