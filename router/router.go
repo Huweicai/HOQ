@@ -175,11 +175,18 @@ func (t *Router) main(ctx *hoq.Context) (rsp *hoq.Response) {
 		//banned
 		return hoq.FastResponse(hoq.StatusMethodNotAllowed, defaultHeader().Set("Allow", strings.Join(allows, ",")))
 	}
-	handler := t.Find(m, u.Path)
-	if handler == nil {
+	node := t.Find(m, u.Path)
+	if node == nil {
 		return notFoundResp
 	}
-	return handler(ctx)
+	//找到节点但是方法不支持
+	if !t.root.allowAllMethods && !ut.Contain(m, node.methods) {
+		return hoq.FastResponse(hoq.StatusMethodNotAllowed, defaultHeader().Set("Allow", strings.Join(node.methods, ",")))
+	}
+	if node.handler == nil {
+		return innerErrResp
+	}
+	return node.handler(ctx)
 }
 
 /**
@@ -242,6 +249,10 @@ func (t *Router) Add(path string, handler hoq.Handler, methods ...string) error 
 		return errors.New("handler cannot be empty")
 	}
 	for _, m := range methods {
+		if m == hoq.MethodsWildCard {
+			methods = hoq.Methods
+			break
+		}
 		if !hoq.IsSupportedMethod(m) {
 			return hoq.MethodNotSupportErr
 		}
@@ -255,22 +266,8 @@ func (t *Router) Add(path string, handler hoq.Handler, methods ...string) error 
 	return nil
 }
 
-func (t *Router) Find(method, path string) hoq.Handler {
-	nd := t.root.find(path)
-	if nd == nil {
-		return nil
-	}
-	//判断方法是否支持
-	if nd.allowAllMethods {
-		return nd.handler
-	}
-	for _, m := range nd.methods {
-		if m == method {
-			return nd.handler
-		}
-	}
-	logs.Info("found node ", nd.val)
-	return nil
+func (t *Router) Find(method, path string) *node {
+	return t.root.find(path)
 }
 
 /**

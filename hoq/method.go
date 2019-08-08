@@ -11,6 +11,7 @@ const (
 	MethodOPTIONS = "OPTIONS"
 	MethodTRACE   = "TRACE"
 )
+const MethodsWildCard = "*"
 
 var Methods = []string{MethodGET, MethodHead, MethodPOST, MethodPUT, MethodDELETE, MethodCONNECT, MethodOPTIONS, MethodOPTIONS, MethodTRACE}
 

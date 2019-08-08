@@ -1,5 +1,7 @@
 package hoq
 
+import "HOQ/logs"
+
 type Handler func(ctx *Context) *Response
 
 /**
@@ -10,6 +12,7 @@ func EchoHandler(ctx *Context) *Response {
 	if len(body) == 0 {
 		body = []byte("HELLO WORLD")
 	}
+	logs.Info(string(body))
 	rsp, _ := ctx.Request.Response(StatusOK, nil, body)
 	return rsp
 }

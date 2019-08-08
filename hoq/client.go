@@ -15,7 +15,7 @@ const defaultReqTimeout = 5 * time.Second
 /**
 包装部分默认行为，简化API
 */
-var defaultClient = Client{engine: &QUICCourier{}, reqTimeout: defaultReqTimeout}
+var defaultClient = &Client{engine: newQUICCourier(), reqTimeout: defaultReqTimeout}
 
 /**
 HTTP客户端，用于发起请求
@@ -98,7 +98,7 @@ func (c *Client) Ping() bool {
 }
 
 func Get(url string) (ctx *Context, err error) {
-	return defaultClient.Request(url, MethodGET, nil, nil)
+	return defaultClient.Request(MethodGET, url, nil, nil)
 }
 
 func Post(url string, body []byte) (ctx *Context, err error) {
