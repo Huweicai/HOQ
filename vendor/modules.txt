@@ -1,3 +1,5 @@
+# bou.ke/monkey v1.0.1
+bou.ke/monkey
 # github.com/cheekybits/genny v1.0.0
 github.com/cheekybits/genny/generic
 # github.com/davecgh/go-spew v1.1.1
@@ -6,7 +8,6 @@ github.com/davecgh/go-spew/spew
 github.com/golang/mock/gomock
 # github.com/lucas-clemente/quic-go v0.11.1
 github.com/lucas-clemente/quic-go
-github.com/lucas-clemente/quic-go/h2quic
 github.com/lucas-clemente/quic-go/internal/ackhandler
 github.com/lucas-clemente/quic-go/internal/congestion
 github.com/lucas-clemente/quic-go/internal/flowcontrol
@@ -23,24 +24,21 @@ github.com/pmezard/go-difflib/difflib
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # golang.org/x/crypto v0.0.0-20190506204251-e1dfcc566284
-golang.org/x/crypto/hkdf
 golang.org/x/crypto/chacha20poly1305
 golang.org/x/crypto/cryptobyte
+golang.org/x/crypto/cryptobyte/asn1
 golang.org/x/crypto/curve25519
+golang.org/x/crypto/hkdf
 golang.org/x/crypto/internal/chacha20
 golang.org/x/crypto/internal/subtle
 golang.org/x/crypto/poly1305
-golang.org/x/crypto/cryptobyte/asn1
 # golang.org/x/net v0.0.0-20190503192946-f4e77d36d62c
 golang.org/x/net/http/httpguts
-golang.org/x/net/http2
-golang.org/x/net/http2/hpack
 golang.org/x/net/idna
-# golang.org/x/sys v0.0.0-20190509141414-a5b02f93d862
+# golang.org/x/sys v0.1.0
 golang.org/x/sys/cpu
-golang.org/x/sys/unix
 # golang.org/x/text v0.3.2
 golang.org/x/text/secure/bidirule
+golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-golang.org/x/text/transform
